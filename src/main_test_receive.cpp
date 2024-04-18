@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <RH_ASK.h>
 
-RH_ASK driver(2000, 3, 4, 0, false);
+RH_ASK driver(1000, 3, 11, 0, false);
 
 
 void setup()
@@ -24,18 +24,20 @@ void setup()
 void loop()
 {
     uint8_t len;
-    uint8_t buf[12];
+    uint8_t buf[RH_ASK_MAX_MESSAGE_LEN];
    // driver.printBuffer("buffer:", buf, 4);
     // d
     if(driver.recv(buf, &len))
     {
         Serial.println(len);
         Serial.print("start[");
-        for(int i=0;i<len;i++)
+        for(int i=0;i<RH_ASK_MAX_MESSAGE_LEN;i++)
         {
             Serial.print((char)buf[i]);
         }
         Serial.println("]end");
+        memset(buf, 0, RH_ASK_MAX_MESSAGE_LEN);
+
     }
     delay(100);
 }
