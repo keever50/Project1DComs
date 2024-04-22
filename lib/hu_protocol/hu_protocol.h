@@ -1,3 +1,5 @@
+// Written by Kevin Witteveen
+
 #pragma once
 #include <Arduino.h>
 #include <RH_ASK.h>
@@ -9,8 +11,16 @@
 #define HU_PROTOCOL_FUNCTION_RANGE  13
 #define HU_PROTOCOL_MIN_PACKET_LEN  7
 
+
 #define HU_PROTOCOL_BUFFER_SIZE RH_ASK_MAX_MESSAGE_LEN
-uint8_t hu_protocol_buffer[HU_PROTOCOL_BUFFER_SIZE];
+
+
+typedef enum hu_prot_receive_err_e
+{
+    HU_PROT_RECEIVE_RECEIVED=0,
+    HU_PROT_RECEIVE_LISTENING=1,
+    HU_PROT_RECEIVE_CORRUPTED=2
+}hu_prot_receive_err_t;
 
 typedef struct hu_packet_s
 {
@@ -31,7 +41,7 @@ typedef struct hu_packet_s
     returns 2 on we received a corrupted packet
 
 */
-int hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet, int buff_length );
+hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet, int buff_length );
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet);
 
 // Calculates the length of a packet and returns the value
