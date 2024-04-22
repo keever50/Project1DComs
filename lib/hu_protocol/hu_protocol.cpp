@@ -19,6 +19,8 @@ int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet)
     if(!driver->waitPacketSent()) return 17;
     if(!driver->send(&packet->LRC,1)) return 8;
     if(!driver->waitPacketSent()) return 18;
+
+    return 0;
 }
 
 int hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet, int buff_length)
