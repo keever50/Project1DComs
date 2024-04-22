@@ -17,9 +17,13 @@
 
 typedef enum hu_prot_receive_err_e
 {
-    HU_PROT_RECEIVE_RECEIVED=0,
-    HU_PROT_RECEIVE_LISTENING=1,
-    HU_PROT_RECEIVE_CORRUPTED=2
+    HU_PROT_RECEIVE_RECEIVED=0,             // We received a packet
+    HU_PROT_RECEIVE_LISTENING=1,            // We received nothing yet 
+    HU_PROT_RECEIVE_IGNORE=3,               // The packet was probably not for us (Destination or start byte did not match)
+    HU_PROT_RECEIVE_TOO_LONG=4,             // The packet length byte was too long
+    HU_PROT_RECEIVE_UNKNOWN_FUNCTION=5,     // The function does not exist
+    HU_PROT_RECEIVE_INCORRECT_END=6,        // This packet ends with the wrong byte
+    HU_PROT_RECEIVE_INCORRECT_LRC=7         // The packet did not pass the LRC error check. It is corrupted.
 }hu_prot_receive_err_t;
 
 typedef struct hu_packet_s
@@ -34,14 +38,11 @@ typedef struct hu_packet_s
     uint8_t LRC;
 }hu_packet_t;
 
-/*
-    Checks if we received a packet.
-    Returns 0 on we received a packet correctly,
-    returns 1 on we received nothing,
-    returns 2 on we received a corrupted packet
+// Receives and decodes a packet. Returns hu_prot_receive_err_t. Check this enum for errors.
+hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet);
+// Decodes a packet. Returns hu_prot_receive_err_t. Check this enum for errors.
+hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet);
 
-*/
-hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet, int buff_length );
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet);
 
 // Calculates the length of a packet and returns the value

@@ -41,7 +41,7 @@ void loop() {
     }
     
     hu_packet_t packet;
-    hu_protocol_receive(&rh_ask, &packet, 0);
+    hu_protocol_receive(&rh_ask, &packet);
     
     delay(50);
 }

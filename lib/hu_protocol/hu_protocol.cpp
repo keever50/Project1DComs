@@ -41,16 +41,22 @@ int hu_protocol_find_start_pos()
 }
 
 // Written by Kevin Witteveen
-hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet, int buff_length)
+hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet)
 {
     uint8_t len;
     // Look if we received a packet. Otherwise return as listening
     if(!driver->recv(hu_protocol_buffer, &len)) return HU_PROT_RECEIVE_LISTENING;
     
-    int i=0;
-    i=hu_protocol_find_start_pos();
+    return hu_protocol_decode( packet );
+
+}
+
+hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
+{
+
+    int i=hu_protocol_find_start_pos();
     // When no start position is found, ignore this packet.
-    if(i<0){return HU_PROT_RECEIVE_LISTENING;}
+    if(i<0){return HU_PROT_RECEIVE_IGNORE;}
 
     // Construct packet
     packet->start=hu_protocol_buffer[i++];
@@ -59,16 +65,16 @@ hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet, i
     packet->source=hu_protocol_buffer[i++];
     packet->destination=hu_protocol_buffer[i++];
 
-    // Check whether the destination is us. If not, return 1
+    // Check whether the destination is us. Otherwise ignore this packet.
     // OUR ADDRESS FUNCTION HERE
 
     // Do some checks before getting the data
     if(packet->length>HU_PROTOCOL_MAX_PACKET_SIZE)
     {
         Serial.println("receive packet error: packet too long. Length=");
-        Serial.print(packet->function);
+        Serial.print(packet->length);
         Serial.println("");
-        return HU_PROT_RECEIVE_CORRUPTED;
+        return HU_PROT_RECEIVE_TOO_LONG;
     }
 
     if(packet->function>HU_PROTOCOL_FUNCTION_RANGE)
@@ -76,7 +82,7 @@ hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet, i
         Serial.print("receive packet error: unknown function [");
         Serial.print(packet->function);
         Serial.println("]");
-        return HU_PROT_RECEIVE_CORRUPTED;
+        return HU_PROT_RECEIVE_UNKNOWN_FUNCTION;
     }
 
     // Transfer the data. This transfers nothing when length is the minimum packet length.
@@ -98,7 +104,7 @@ hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet, i
         Serial.print("receive packet error: incorrect packet end [");
         Serial.print(packet->end);
         Serial.println("]");       
-        return HU_PROT_RECEIVE_CORRUPTED;
+        return HU_PROT_RECEIVE_INCORRECT_END;
     }
 
     // Calculate and check whether the LRC is correct or not
@@ -110,9 +116,8 @@ hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet, i
         Serial.print("] should be [");   
         Serial.print(packet->LRC);
         Serial.println("]");      
-        return HU_PROT_RECEIVE_CORRUPTED;     
+        return HU_PROT_RECEIVE_INCORRECT_LRC;     
     }
 
-    return HU_PROT_RECEIVE_RECEIVED;
-
+    return HU_PROT_RECEIVE_RECEIVED;    
 }
