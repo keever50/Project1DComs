@@ -2,7 +2,7 @@
 
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet)
 {
-    // Fix this. Use waitPacketSent() before sending more data.
+
     if(!driver->send(&packet->start,1)) return 1;
     if(!driver->waitPacketSent()) return 11;
     if(!driver->send(&packet->length,1)) return 2;
