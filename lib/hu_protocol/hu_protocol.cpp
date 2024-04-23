@@ -4,25 +4,40 @@
 uint8_t hu_protocol_buffer[HU_PROTOCOL_BUFFER_SIZE];
 char hu_protocol_tag_receive[]="PROTOCOL RECEIVE";
 
+// Written by Marijn Boumans & Kevin Witteveen
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet)
 {
+    // Prepare transmit buffer //
 
-    if(!driver->send(&packet->start,1)) return 1;
-    if(!driver->waitPacketSent()) return 11;
-    if(!driver->send(&packet->length,1)) return 2;
-    if(!driver->waitPacketSent()) return 12;
-    if(!driver->send(&packet->function,1)) return 3;
-    if(!driver->waitPacketSent()) return 13;
-    if(!driver->send(&packet->source,1)) return 4;
-    if(!driver->waitPacketSent()) return 14;
-    if(!driver->send(&packet->destination,1)) return 5;
-    if(!driver->waitPacketSent()) return 15;
-    if(!driver->send(packet->data, packet->length)) return 6;
-    if(!driver->waitPacketSent()) return 16;
-    if(!driver->send(&packet->end,1)) return 7;
-    if(!driver->waitPacketSent()) return 17;
-    if(!driver->send(&packet->LRC,1)) return 8;
-    if(!driver->waitPacketSent()) return 18;
+    // Move start byte further away for preambles
+    int offset=0;
+    int i=offset;
+
+    // Start
+    hu_protocol_buffer[i++]=packet->start;
+    hu_protocol_buffer[i++]=packet->length;
+    hu_protocol_buffer[i++]=packet->function;
+    hu_protocol_buffer[i++]=packet->source;
+    hu_protocol_buffer[i++]=packet->destination;
+
+    // Data
+    for(int p=0;p<packet->length-HU_PROTOCOL_MIN_PACKET_LEN;p++)
+    {
+        hu_protocol_buffer[i++]=packet->data[p];
+    }
+    
+    // End
+    hu_protocol_buffer[i++]=packet->end;
+    
+    // LRC
+    packet->LRC = get_LRC(hu_protocol_buffer+offset, packet->length-1);
+    hu_protocol_buffer[i++]=packet->LRC;
+
+
+    // Transmit //
+    if(!driver->send(hu_protocol_buffer,packet->length+offset)) return 1;
+    if(!driver->waitPacketSent(HU_PROTOCOL_TIMEOUT)) return 2;
+
 
     return 0;
 }
@@ -44,20 +59,27 @@ int hu_protocol_find_start_pos()
 // Written by Kevin Witteveen
 hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet)
 {
-    uint8_t len;
+    uint8_t len=HU_PROTOCOL_BUFFER_SIZE;
+    
     // Look if we received a packet. Otherwise return as listening
     if(!driver->recv(hu_protocol_buffer, &len)) return HU_PROT_RECEIVE_LISTENING;
-    
     return hu_protocol_decode( packet );
 
 }
 
+// Written by Kevin Witteveen
 hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
 {
 
+    // Find the starting position of the packet by using the start byte and apply the offset if needed.
     int i=hu_protocol_find_start_pos();
-    // When no start position is found, ignore this packet.
-    if(i<0){return HU_PROT_RECEIVE_IGNORE;}
+    int offset=i;
+    
+    // When no start byte is found, ignore this packet.
+    if(i<0)
+    {
+        return HU_PROT_RECEIVE_IGNORE;
+    }
 
     // Construct packet
     packet->start=hu_protocol_buffer[i++];
@@ -70,15 +92,25 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     // OUR ADDRESS FUNCTION HERE
 
     // Do some checks before getting the data
+    // Length is too long
     if(packet->length>HU_PROTOCOL_MAX_PACKET_SIZE)
     {
-        Serial.println("receive packet error: packet too long. Length=");
+        Serial.print("receive packet error: packet too long. Length=");
+        Serial.print(packet->length);
+        Serial.println("");
+        return HU_PROT_RECEIVE_TOO_LONG;
+    }
+    // Length is too short
+    if(packet->length<HU_PROTOCOL_MIN_PACKET_LEN)
+    {
+        Serial.print("receive packet error: packet too short. Length=");
         Serial.print(packet->length);
         Serial.println("");
         return HU_PROT_RECEIVE_TOO_LONG;
     }
 
-    if(packet->function>HU_PROTOCOL_FUNCTION_RANGE)
+
+    if(packet->function>HU_PROTOCOL_FUNCTION_RANGE || packet->function < 0)
     {
         Serial.print("receive packet error: unknown function [");
         Serial.print(packet->function);
@@ -100,7 +132,7 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     packet->LRC=hu_protocol_buffer[i++];
 
     // Last checks
-    if(packet->end==HU_PROTOCOL_END_BYTE)
+    if(packet->end!=HU_PROTOCOL_END_BYTE)
     {
         Serial.print("receive packet error: incorrect packet end [");
         Serial.print(packet->end);
@@ -109,16 +141,54 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     }
 
     // Calculate and check whether the LRC is correct or not
-    uint8_t LRC = get_LRC((uint8_t*)packet, packet->length-1);
+    uint8_t LRC = get_LRC(hu_protocol_buffer+offset, packet->length-1);
     if(LRC!=packet->LRC)
     {
-        Serial.print("receive packet error: incorrect LRC [");
+        Serial.print("receive packet error: Received LRC [");
         Serial.print(LRC);
-        Serial.print("] should be [");   
+        Serial.print("] but we calculated [");   
         Serial.print(packet->LRC);
         Serial.println("]");      
         return HU_PROT_RECEIVE_INCORRECT_LRC;     
     }
 
     return HU_PROT_RECEIVE_RECEIVED;    
+}
+
+void hu_protocol_print_packet( hu_packet_t* packet )
+{
+    Serial.println("----------[HU_Protocol packet]----------");
+
+    Serial.print("  Start byte: ");
+    Serial.println(packet->start);
+
+    Serial.print("  Length: ");
+    Serial.println(packet->length);
+
+    Serial.print("  Function: ");
+    Serial.println(packet->function);
+
+    Serial.print("  Source: ");
+    Serial.println(packet->source);
+
+    Serial.print("  Destination: ");
+    Serial.println(packet->destination);
+ 
+    int data_length = packet->length-HU_PROTOCOL_MIN_PACKET_LEN;
+    Serial.print("  Data: [");
+    for(int i=0;i<data_length;i++)
+    {
+        Serial.print(packet->data[i]);
+        Serial.print(",");
+    }
+    Serial.println("]");
+
+    Serial.print("  end byte: ");
+    Serial.println(packet->end);
+
+    Serial.print("  LRC: ");
+    Serial.println(packet->LRC);
+
+    Serial.println("-----------------------------------------\n");
+  
 }
