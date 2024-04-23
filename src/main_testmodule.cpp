@@ -57,7 +57,7 @@ void loop()
   //   hu_protocol_print_packet(&packet);
   // }
 
-  delay(6000);
+  delay(15000);
 }
 
 
