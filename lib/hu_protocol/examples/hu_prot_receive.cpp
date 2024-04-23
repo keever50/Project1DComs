@@ -26,6 +26,13 @@ void loop()
         hu_protocol_print_packet(&packet);
     }    
 
+    // You can extract variables this way
+    uint8_t function = packet.function;
+    /*Ofcourse arrays as well. Make sure you dont read more than "packet.length-HU_PROTOCOL_MIN_PACKET_LEN"
+    This is the total package length we received and we subtract the minimum size of the packet as if there is no data. This way you know the data length.*/
+    uint8_t data_length = packet.length-HU_PROTOCOL_MIN_PACKET_LEN;
+    uint8_t* data = packet.data;
+
     // Wait a little
     delay(500);
 }
