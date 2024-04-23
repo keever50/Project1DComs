@@ -9,7 +9,7 @@ int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet)
     // Prepare transmit buffer //
 
     // Move start byte further away for preambles
-    int offset=1;
+    int offset=0;
     int i=offset;
 
     // Start
