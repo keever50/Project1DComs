@@ -4,7 +4,7 @@
      RADIO
 ****************/
 // Pins
-#define RA_BITRATE          1000
+#define RA_BITRATE          500
 #define RA_RX               3
 #define RA_TX               11
 
