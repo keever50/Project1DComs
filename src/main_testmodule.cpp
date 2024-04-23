@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <hu_protocol.h>
 #include <test_module_hardware.h>
+#include <biterrors.h>
 
 #include "SPI.h"
 #include <Wire.h>
@@ -11,39 +12,52 @@
 #include <../fonts/FreeSans12pt7b.h>
 #include <../fonts/FreeSans24pt7b.h>
 #include <../fonts/TomThumb.h>
-TFT_22_ILI9225 tft = TFT_22_ILI9225(TFT_RST, TFT_RS, TFT_CS, TFT_LED, TFT_BRIGHTNESS);
+//TFT_22_ILI9225 tft = TFT_22_ILI9225(TFT_RST, TFT_RS, TFT_CS, TFT_LED, TFT_BRIGHTNESS);
 
 // RADIO
 #include <RadioHead.h>
 RH_ASK rh_ask(RA_BITRATE, RA_RX, RA_TX, 0, false);
 
-
-
-
-void keys(int bytes)
-{
-  Serial.println(Wire.read());
-}
-
 // Setup
-void setup() {
+void setup() 
+{
   Serial.begin(9600);
-  Wire.begin();
+  rh_ask.init();
+  
 }
 
 // Loop
-void loop() {
-    uint8_t bytes = Wire.requestFrom(0x5F,1);
-    uint8_t byte = Wire.read();
-    if(byte)
-    {
-        Serial.print((char)byte);
-    }
-    
-    hu_packet_t packet;
-    hu_protocol_receive(&rh_ask, &packet);
-    
-    delay(50);
+void loop() 
+{
+  hu_packet_t packet;
+  packet.function=0x01;
+  packet.length=HU_PROTOCOL_MIN_PACKET_LEN+HU_PROTOCOL_MAX_DATA_SIZE;
+  for(int i=0;i<HU_PROTOCOL_MAX_DATA_SIZE;i++)
+  {
+    packet.data[i]=random(0x00,0xFF);
+  }
+  packet.start=HU_PROTOCOL_START_BYTE;
+  packet.end=HU_PROTOCOL_END_BYTE;
+  
+
+  Serial.println("Transmit");
+  int err = hu_protocol_transmit( &rh_ask, &packet );
+  if(err)
+  {
+    Serial.print("Transmit error ");
+    Serial.println(err);
+  }
+
+  // Receive
+  // hu_prot_receive_err_t err = hu_protocol_receive( &rh_ask, &packet );
+  // Serial.print("Return: ");
+  // Serial.println(err);
+  // if(err != HU_PROT_RECEIVE_IGNORE && err != HU_PROT_RECEIVE_LISTENING)
+  // {
+  //   hu_protocol_print_packet(&packet);
+  // }
+
+  delay(15000);
 }
 
 
