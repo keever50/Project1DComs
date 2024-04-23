@@ -11,7 +11,12 @@
 #define HU_PROTOCOL_MAX_DATA_SIZE   36
 #define HU_PROTOCOL_FUNCTION_RANGE  13
 #define HU_PROTOCOL_MIN_PACKET_LEN  7
+#define HU_PROTOCOL_START_LENGTH    5
+#define HU_PROTOCOL_END_LENGTH      2
 
+
+
+#define HU_PROTOCOL_TIMEOUT 500
 #define HU_PROTOCOL_BUFFER_SIZE RH_ASK_MAX_MESSAGE_LEN
 
 
@@ -45,8 +50,4 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet);
 
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet);
 
-// Calculates the length of a packet and returns the value
-int hu_protocol_calculate_length(hu_packet_t* packet);
-
-// Checks the LRC of a packet and returns 1 on error
-int hu_protocol_calculate_LRC(hu_packet_t* packet);
+void hu_protocol_print_packet( hu_packet_t* packet );
