@@ -4,6 +4,7 @@
 uint8_t hu_protocol_buffer[HU_PROTOCOL_BUFFER_SIZE];
 char hu_protocol_tag_receive[]="PROTOCOL RECEIVE";
 
+// Written by Marijn Boumans & Kevin Witteveen
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet)
 {
     // Prepare transmit buffer //
@@ -66,13 +67,15 @@ hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet)
 
 }
 
+// Written by Kevin Witteveen
 hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
 {
 
+    // Find the starting position of the packet by using the start byte and apply the offset if needed.
     int i=hu_protocol_find_start_pos();
     int offset=i;
-    Serial.println(offset);
-    // When no start position is found, ignore this packet.
+    
+    // When no start byte is found, ignore this packet.
     if(i<0)
     {
         return HU_PROT_RECEIVE_IGNORE;
@@ -107,7 +110,7 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     }
 
 
-    if(packet->function>HU_PROTOCOL_FUNCTION_RANGE)
+    if(packet->function>HU_PROTOCOL_FUNCTION_RANGE || packet->function < 0)
     {
         Serial.print("receive packet error: unknown function [");
         Serial.print(packet->function);
@@ -141,9 +144,9 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     uint8_t LRC = get_LRC(hu_protocol_buffer+offset, packet->length-1);
     if(LRC!=packet->LRC)
     {
-        Serial.print("receive packet error: incorrect LRC [");
+        Serial.print("receive packet error: Received LRC [");
         Serial.print(LRC);
-        Serial.print("] should be [");   
+        Serial.print("] but we calculated [");   
         Serial.print(packet->LRC);
         Serial.println("]");      
         return HU_PROT_RECEIVE_INCORRECT_LRC;     
@@ -154,23 +157,25 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
 
 void hu_protocol_print_packet( hu_packet_t* packet )
 {
-    Serial.print("Start byte: ");
+    Serial.println("----------[HU_Protocol packet]----------");
+
+    Serial.print("  Start byte: ");
     Serial.println(packet->start);
 
-    Serial.print("Length: ");
+    Serial.print("  Length: ");
     Serial.println(packet->length);
 
-    Serial.print("Function: ");
+    Serial.print("  Function: ");
     Serial.println(packet->function);
 
-    Serial.print("Source: ");
+    Serial.print("  Source: ");
     Serial.println(packet->source);
 
-    Serial.print("Destination: ");
+    Serial.print("  Destination: ");
     Serial.println(packet->destination);
  
     int data_length = packet->length-HU_PROTOCOL_MIN_PACKET_LEN;
-    Serial.print("Data: [");
+    Serial.print("  Data: [");
     for(int i=0;i<data_length;i++)
     {
         Serial.print(packet->data[i]);
@@ -178,11 +183,12 @@ void hu_protocol_print_packet( hu_packet_t* packet )
     }
     Serial.println("]");
 
-    Serial.print("end byte: ");
+    Serial.print("  end byte: ");
     Serial.println(packet->end);
 
-    Serial.print("LRC: ");
+    Serial.print("  LRC: ");
     Serial.println(packet->LRC);
 
-    Serial.println("");
+    Serial.println("-----------------------------------------\n");
+  
 }
