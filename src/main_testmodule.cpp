@@ -6,7 +6,9 @@
 #include <logging2.h>
 #include "SPI.h"
 #include <Wire.h>
-#include <CI_processing.h>
+#include <cli_processing.h>
+#include <avr/wdt.h>
+#include <tm_display.h>
 
 // TFT
 #include "TFT_22_ILI9225.h"
@@ -35,82 +37,81 @@ void log2_log_raw( const char* msg )
   testpos++;
 }
 
-#define CLI_HEIGHT  20
-#define CLI_WIDTH   20
+
+
 cli_terminal_t cli;
 
 uint16_t colors[]=
 {
-  tft.setColor(255,0,0),
-  tft.setColor(0,255,0),
-  tft.setColor(0,0,255)
+  COLOR_RED,
+  COLOR_GREEN,
+  COLOR_BLUE
 };
 
 // Setup
 void setup() 
 {
+  // Enable watchdog
+  wdt_disable();
+  delay(3000);
+  wdt_enable(WDTO_2S);
+
+  //pinMode(6, OUTPUT);
+
   Serial.begin(9600);
+
+  Wire.begin();
 
   rh_ask.init();
   tft.begin();
   tft.clear();
   
-  tft.setFont(Terminal6x8, true);
-
+  tft.setFont(Terminal6x8);
+  tft.setOrientation(1);
   
   cli.width=CLI_WIDTH;
   cli.height=CLI_HEIGHT;
   cli.buffersize=CLI_WIDTH*CLI_HEIGHT;
   cli.buffer=(char*)malloc(cli.buffersize);
+  if(cli.buffer==NULL)
+  {
+    tft.drawText(0,0,"Out of memory", COLOR_RED);
+    while(true);
+  }
   cli.colors=(char*)malloc(cli.buffersize);
+  if(cli.colors==NULL)
+  {
+    tft.drawText(0,0,"Out of memory", COLOR_RED);
+    while(true);
+  }
 
   memset(cli.buffer, 0, cli.buffersize);
-  cli.current_color=0;
+  cli.current_color=0b11100000;
   cli_put( &cli, 10, 10, 'A');
   cli_put( &cli, 11, 10, 'B');
-  cli.current_color=1;
+  cli.current_color=0b00011000;
   cli_put( &cli, 12, 10, 'C');
   //tft.drawGFXText(10,10,"HELLO",COLOR_BLUE);
+
+
+  tm_test_cli(tft, cli);
+  tm_draw_cli(tft, cli);
+
+  cli.current_color=0b00011000;
+
+  wdt_reset();
 }
 
 // Loop
 void loop() 
 {
+  char entry[30];
+  static int entry_pos=0;
+  tm_entry(tft, entry, &entry_pos, 30);
+  wdt_reset();
 
 
-  int x=0;
-  int written=0;
-  while(Serial.available())
-  {
-    char c = Serial.read();
-    if(c=='\n') 
-    {
-      cli_shift_up( &cli );
-    }else{
-      cli_put( &cli, x, cli.height-1, c);
-    }
-    
-    written=1;
-    x++;
-  }
 
-  if(written)
-  {
-    tft.clear();
-    for(uint16_t y=0; y<cli.height; y++)
-    {
-      for(uint16_t x=0; x<cli.width; x++)
-      {
-        int addr = y*cli.width+x;
-        char c = cli.buffer[addr];
-        uint16_t col = colors[(int)cli.colors[addr]];
-        
-        if(c==0) continue;
-        tft.drawChar(x*8,y*8,c,col);
-      }  
-    }
-  }
-  
   delay(100);
 }
 
