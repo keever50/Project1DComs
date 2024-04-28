@@ -6,14 +6,21 @@
 
 void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
 {
-    tft.clear();
+    static char ecode[32];
+    //tft.clear();
+    Serial.print("\e[H");
     for(uint16_t y=0; y<cli.height; y++)
     {
         for(uint16_t x=0; x<cli.width; x++)
         {
             int addr = y*cli.width+x;
             char c = cli.buffer[addr];
-            if(c==0) continue;
+            if(c==0)
+            {
+                tft.fillRectangle(x*CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT, x*CLI_FONT_WIDTH+CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT+CLI_FONT_HEIGHT-1, COLOR_BLACK);
+                Serial.print(" ");
+                continue;
+            }
 
             // Get RRRGGBBB
             uint8_t col = cli.colors[addr];
@@ -29,15 +36,23 @@ void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
                 col=col>>2;
                 uint8_t R = col&0b00000111;
 
+                // escape code for serial
+                snprintf(ecode, sizeof(ecode), "\e[38;2;%d;%d;%dm",R*36,G*85,B*36);
+                ecode[31]=0;
+                Serial.print(ecode);
+                
                 // Convert to 16 bit
                 RGB = tft.setColor(R*36,G*85,B*36);
 
                 prev_col=col;
             }
+            tft.setBackgroundColor(COLOR_DARKBLUE);
+            tft.drawChar(x*CLI_FONT_WIDTH,y*CLI_FONT_HEIGHT,c,RGB);
 
-            tft.drawChar(x*6,y*8,c,RGB);
-
+            Serial.print(c);
         }  
+        Serial.println("");
+        wdt_reset();
     }    
 }
 
@@ -51,11 +66,10 @@ void tm_test_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
         {
             
             cli.current_color=random(0, 7)<<5;
-            cli_put(&cli, x, y, 'R');
+            cli_set(&cli, x, y, 'R');
         }  
     }   
     tm_draw_cli( tft, cli );
-    delay(500);
     wdt_reset();
 
     // G
@@ -65,11 +79,10 @@ void tm_test_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
         {
             
             cli.current_color=random(0,3)<<3;
-            cli_put(&cli, x, y, 'G');
+            cli_set(&cli, x, y, 'G');
         }  
     }   
     tm_draw_cli( tft, cli );
-    delay(500);
     wdt_reset();
 
     // B
@@ -79,11 +92,10 @@ void tm_test_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
         {
             
             cli.current_color=random(0,7);
-            cli_put(&cli, x, y, 'B');
+            cli_set(&cli, x, y, 'B');
         }  
     }   
-    tm_draw_cli( tft, cli );
-    delay(500);    
+    tm_draw_cli( tft, cli );  
     wdt_reset();
 
     // RGB
@@ -93,11 +105,10 @@ void tm_test_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
         {
             
             cli.current_color=random(0,0xFF);
-            cli_put(&cli, x, y, '#');
+            cli_set(&cli, x, y, '#');
         }  
     }   
-    tm_draw_cli( tft, cli );
-    delay(1000);   
+    tm_draw_cli( tft, cli );  
     wdt_reset();   
 
     // Clear
@@ -107,7 +118,7 @@ void tm_test_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
         {
             
             cli.current_color=0;
-            cli_put(&cli, x, y, '\0');
+            cli_set(&cli, x, y, '\0');
         }  
     }   
     tm_draw_cli( tft, cli );     
@@ -146,6 +157,9 @@ int tm_entry(TFT_22_ILI9225& tft, char* buff, int *buff_pos, int buff_len)
     char c = Wire.read();
     Wire.read();
 
+    // Or serial
+    if(Serial.available()) c = Serial.read();
+
     // When character is nothing, return
     if(c==0) return 1;
 
@@ -165,7 +179,7 @@ int tm_entry(TFT_22_ILI9225& tft, char* buff, int *buff_pos, int buff_len)
     // Check bounds and preserve null
     if((*buff_pos)>=buff_len-1)
     {
-        tone(6, 100, 100);  
+        tone(6, 500, 100);  
         return 1;
     };
 
@@ -180,6 +194,6 @@ int tm_entry(TFT_22_ILI9225& tft, char* buff, int *buff_pos, int buff_len)
 
 
 
-    return 0;
+    return 1;
 
 }

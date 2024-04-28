@@ -58,7 +58,7 @@ void setup()
 
   //pinMode(6, OUTPUT);
 
-  Serial.begin(9600);
+  Serial.begin(250000);
 
   Wire.begin();
 
@@ -69,6 +69,8 @@ void setup()
   tft.setFont(Terminal6x8);
   tft.setOrientation(1);
   
+  memset(&cli, 0, sizeof(cli));
+
   cli.width=CLI_WIDTH;
   cli.height=CLI_HEIGHT;
   cli.buffersize=CLI_WIDTH*CLI_HEIGHT;
@@ -87,10 +89,10 @@ void setup()
 
   memset(cli.buffer, 0, cli.buffersize);
   cli.current_color=0b11100000;
-  cli_put( &cli, 10, 10, 'A');
-  cli_put( &cli, 11, 10, 'B');
+  cli_set( &cli, 10, 10, 'A');
+  cli_set( &cli, 11, 10, 'B');
   cli.current_color=0b00011000;
-  cli_put( &cli, 12, 10, 'C');
+  cli_set( &cli, 12, 10, 'C');
   //tft.drawGFXText(10,10,"HELLO",COLOR_BLUE);
 
 
@@ -105,14 +107,30 @@ void setup()
 // Loop
 void loop() 
 {
-  char entry[30];
+
+
+  char entry[100];
   static int entry_pos=0;
-  tm_entry(tft, entry, &entry_pos, 30);
+  char t = tm_entry(tft, entry, &entry_pos, 30);
+  if(!t)
+  {
+    cli_print(&cli, entry);
+    cli_put(&cli, '\n');
+    tm_draw_cli(tft, cli);
+  }
   wdt_reset();
 
 
+  // cli.current_color=0b00011000;
+  // char buf[64];
+  // static char count=0;
+  // snprintf(buf, sizeof(buf), "Hello,\nworld!\n%d times\n\n", count++);
+  // cli.current_color=random(0,0xFF);
+  // cli_print(&cli, buf);
+  // tm_draw_cli(tft, cli);
 
-  delay(100);
+
+  delay(10);
 }
 
 
