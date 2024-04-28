@@ -12,13 +12,26 @@ void memcopy( char* dest, const char* src, int amount )
     }
 }
 
-void cli_put( cli_terminal_t* term, uint16_t x, uint16_t y, char c )
+inline int cli_xy_to_addr( cli_terminal_t* term, uint16_t x, uint16_t y)
+{
+    return y*term->width+x;
+}
+
+void cli_set( cli_terminal_t* term, uint16_t x, uint16_t y, char c )
 {
     uint16_t addr = y*term->width+x;
     if(addr>=term->buffersize) return;
     term->buffer[addr]=c;
     term->colors[addr]=term->current_color;
 }
+
+void cli_set_addr( cli_terminal_t* term, int addr, char c )
+{
+    if(addr>=term->buffersize) return;
+    term->buffer[addr]=c;
+    term->colors[addr]=term->current_color;
+}
+
 
 void cli_shift_up( cli_terminal_t* term )
 {
@@ -73,4 +86,44 @@ unsigned char cli_get_next_argument_iterative(int* iterator, const char* str, ch
     }
 
     return 0;
+}
+
+// Creates a newline
+void cli_newline(cli_terminal_t* term)
+{
+    if(term->current_line < term->height-1)
+    {
+        term->current_line++;
+    }else{
+        cli_shift_up(term);
+    }
+
+    term->current_colunn=0;
+}
+
+void cli_put(cli_terminal_t* term, char c)
+{
+    if(c=='\n' || c=='\r')
+    {
+        cli_newline(term);
+        return;
+    }
+    cli_set( term, term->current_colunn++, term->current_line, c);
+    if(term->current_colunn>=term->width) cli_newline(term);
+}
+
+void cli_print(cli_terminal_t* term, const char* str )
+{
+    
+    for(int i=0;i<CLI_MAX_STR_LEN;i++)
+    {
+        char c = str[i];
+        if(c==0) break;
+        cli_put(term, c);
+    }  
+}
+
+void cli_clear(cli_terminal_t* term)
+{
+    memset(term->buffer, 0, term->buffersize);
 }

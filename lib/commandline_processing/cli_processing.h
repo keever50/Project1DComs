@@ -7,6 +7,8 @@ extern "C" {
 
 #include <stdint.h>
 
+#define CLI_MAX_STR_LEN     64
+
 typedef struct
 {
     uint16_t width;
@@ -15,12 +17,15 @@ typedef struct
     char current_color;
     char* buffer;
     char* colors;
+    uint16_t current_line;
+    uint16_t current_colunn;
 } cli_terminal_t;
 
-void cli_put( cli_terminal_t* term, uint16_t x, uint16_t y, char c );
+void cli_set( cli_terminal_t* term, uint16_t x, uint16_t y, char c );
 void cli_shift_up( cli_terminal_t* term );
-
-
+void cli_print(cli_terminal_t* term, const char* str );
+void cli_put(cli_terminal_t* term, char c);
+void cli_clear(cli_terminal_t* term);
 /*
 This function can be repeated to find all the arguments in a string.
 
