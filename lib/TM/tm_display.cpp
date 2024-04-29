@@ -1,3 +1,9 @@
+/*
+    Test module display helper functions.
+    Written by Kevin Witteveen
+*/
+
+
 #include <tm_display.h>
 #include <avr/wdt.h>
 #include <Wire.h>
@@ -154,7 +160,7 @@ int tm_entry(TFT_22_ILI9225& tft, char* buff, int *buff_pos, int buff_len)
 
     // Request character from keyboard
     Wire.requestFrom(0x5F, 2);
-    char c = Wire.read();
+    char c = 0;//Wire.read();
     Wire.read();
 
     // Or serial
@@ -166,7 +172,7 @@ int tm_entry(TFT_22_ILI9225& tft, char* buff, int *buff_pos, int buff_len)
     // Check enter
     if(c=='\n' || c=='\r')
     {
-        tone(6, 1000, 10);
+        //tone(6, 1000, 10);
         buff[(*buff_pos)]=0; // Add null  
         (*buff_pos)=0;
 
@@ -179,12 +185,12 @@ int tm_entry(TFT_22_ILI9225& tft, char* buff, int *buff_pos, int buff_len)
     // Check bounds and preserve null
     if((*buff_pos)>=buff_len-1)
     {
-        tone(6, 500, 100);  
+        //tone(6, 500, 100);  
         return 1;
     };
 
     // Other characters //
-    tone(6, 100, 10);
+    //tone(6, 100, 10);
 
     // Add to screen
     tft.drawChar((*buff_pos)*CLI_FONT_WIDTH, SCR_HEIGHT-CLI_FONT_HEIGHT-1, c, COLOR_GREEN);
