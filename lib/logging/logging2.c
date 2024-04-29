@@ -1,23 +1,19 @@
 // Written by Kevin Witteveen
-#include <Arduino.h>
 #include <logging2.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
-/*
-    This function can be customized to output logging.
-    Called by log2_log_output, but can also be used to directly output messages without formatting. Also ignoring level
-*/
-void log2_log_raw( const char* msg )
-{
-    //char msg_case[64];
-    //strlcpy(msg_case, msg, 64);
-    //strupr(msg_case);
+// void log2_log_raw( const char* msg )
+// {
+//     //char msg_case[64];
+//     //strlcpy(msg_case, msg, 64);
+//     //strupr(msg_case);
 
-    Serial.print(msg);
+//     Serial.print(msg);
     
-}
+// }
 
 void log2_log(int level, const char* tag, const char* str, ...)
 {
