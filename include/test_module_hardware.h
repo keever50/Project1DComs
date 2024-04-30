@@ -1,3 +1,4 @@
+#ifdef testmodule
 #pragma once
 
 /****************
@@ -20,3 +21,5 @@
 #define TFT_LED 7   // Backlight
 // Settings
 #define TFT_BRIGHTNESS 200 // Initial brightness of TFT backlight
+
+#endif
