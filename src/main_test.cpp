@@ -28,6 +28,31 @@ int ldrIndex = 0;
 int potIndex = 0;
 
 
+light();
+Temp();
+pot();
+storeReading(int value, int* readings, int* index);
+printStats();
+
+void setup()
+{
+Serial.begin(9600);
+}
+
+void loop()
+{
+for (int i = 0; i < numReadings; i++) 
+{
+Temp();
+light();
+pot();
+printStats(); // Print statistics after collecting 10 readings
+delay(1000); // Delay before taking the next set of readings
+}
+}
+
+
+
 void light() 
 {
 LDRvalue = analogRead(LDRPin);
@@ -115,21 +140,5 @@ Serial.println(avgPot);
 Serial.println();
 }
 
-void setup()
-{
-Serial.begin(9600);
-}
-
-void loop()
-{
-for (int i = 0; i < numReadings; i++) 
-{
-Temp();
-light();
-pot();
-printStats(); // Print statistics after collecting 10 readings
-delay(1000); // Delay before taking the next set of readings
-}
-}
 
 #endif
