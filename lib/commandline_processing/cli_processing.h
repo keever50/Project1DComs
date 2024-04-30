@@ -1,3 +1,8 @@
+/*
+    Command line interface library.
+    Written by Kevin Witteveen
+*/
+
 #ifndef CI_PROC_H
 #define CI_PROC_H
 
@@ -21,13 +26,33 @@ typedef struct
     uint16_t current_colunn;
 } cli_terminal_t;
 
-void cli_set( cli_terminal_t* term, uint16_t x, uint16_t y, char c );
-void cli_shift_up( cli_terminal_t* term );
-void cli_print(cli_terminal_t* term, const char* str );
-void cli_put(cli_terminal_t* term, char c);
-void cli_clear(cli_terminal_t* term);
+
 /*
-This function can be repeated to find all the arguments in a string.
+    Sets a character on a specific x, y coordinate.
+*/
+void cli_set( cli_terminal_t* term, uint16_t x, uint16_t y, char c );
+/*
+    Shifts the entire terminal up.
+    This is useful in newlines.
+*/
+void cli_shift_up( cli_terminal_t* term );
+/*
+    Prints a string to the terminal.
+    This does not create newlines.
+*/
+void cli_print(cli_terminal_t* term, const char* str );
+/*
+    Puts a character into the terminal and advances.
+*/
+void cli_put(cli_terminal_t* term, char c);
+/*
+    Clears the terminal buffer.
+*/
+void cli_clear(cli_terminal_t* term);
+
+
+/*
+This helper function can be repeated to find all the arguments in a string.
 
 int* iterator takes a pointer to an iterator. The iterator is a counter that shows the next argument position. So we can run this function in repeat and advance to the next argument automatically.
 const char* str is the string where to get arguments from.

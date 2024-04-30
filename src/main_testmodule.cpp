@@ -9,6 +9,7 @@
 #include <cli_processing.h>
 #include <avr/wdt.h>
 #include <tm_display.h>
+#include <MemoryFree.h>
 
 // TFT
 #include "TFT_22_ILI9225.h"
@@ -26,7 +27,7 @@ int testpos=0;
 void log2_log_raw( const char* msg )
 {
   Serial.print(msg);
-
+  
   static char buff[64];
   strncpy(buff, msg, 63);
   Serial.print(strlen(msg));
@@ -47,6 +48,36 @@ uint16_t colors[]=
   COLOR_GREEN,
   COLOR_BLUE
 };
+
+void command( const char* cmd )
+{
+  int iter=0, arg_len=0;
+  char* arg = (char*)malloc(32);
+  if(arg==NULL)
+  {
+    Serial.println("mem err");
+    free(arg);
+    return;
+  }
+  memset(arg, 0, 32);
+
+  cli_get_next_argument_iterative(&iter, cmd, arg, 32, &arg_len);
+
+  if(!strcmp(arg,"test"))
+  {
+    cli_print(&cli, "testing\n");
+    cli_get_next_argument_iterative(&iter, cmd, arg, 32, &arg_len);
+    int num = atoi(arg);
+    for(int n=0;n<num;n++)
+    {
+      cli_print(&cli, "LINE\n");
+      tm_draw_cli(tft,cli);
+    }
+    
+  }
+
+  free(arg);
+}
 
 // Setup
 void setup() 
@@ -101,6 +132,15 @@ void setup()
 
   cli.current_color=0b00011000;
 
+
+  //Show memory
+  cli_print(&cli, "memory: ");
+  char* msg = (char*)malloc(32);
+  snprintf(msg, 32, "%db free\n", freeMemory()+32);
+  cli_print(&cli, msg);
+  tm_draw_cli(tft,cli);
+  free(msg);
+
   wdt_reset();
 }
 
@@ -117,6 +157,7 @@ void loop()
     cli_print(&cli, entry);
     cli_put(&cli, '\n');
     tm_draw_cli(tft, cli);
+    command(entry);
   }
   wdt_reset();
 

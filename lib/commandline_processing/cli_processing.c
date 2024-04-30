@@ -1,10 +1,15 @@
+/*
+    Command line interface library.
+    Written by Kevin Witteveen
+*/
+
 #include <cli_processing.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 // Standard memcpy replacement
-void memcopy( char* dest, const char* src, int amount )
+void cli_memcopy( char* dest, const char* src, int amount )
 {
     for(int i=0;i<amount;i++)
     {
@@ -19,7 +24,7 @@ inline int cli_xy_to_addr( cli_terminal_t* term, uint16_t x, uint16_t y)
 
 void cli_set( cli_terminal_t* term, uint16_t x, uint16_t y, char c )
 {
-    uint16_t addr = y*term->width+x;
+    uint16_t addr = cli_xy_to_addr(term, x, y);
     if(addr>=term->buffersize) return;
     term->buffer[addr]=c;
     term->colors[addr]=term->current_color;
@@ -38,8 +43,8 @@ void cli_shift_up( cli_terminal_t* term )
     // For each line copy next line up. Except the first line
     for(uint16_t addr=term->width ; addr<term->buffersize ; addr=addr+term->width)
     {
-        memcopy(term->buffer+(addr-term->width), term->buffer+addr, term->width);
-        memcopy(term->colors+(addr-term->width), term->colors+addr, term->width);
+        cli_memcopy(term->buffer+(addr-term->width), term->buffer+addr, term->width);
+        cli_memcopy(term->colors+(addr-term->width), term->colors+addr, term->width);
     }
 
     // Clean the new line appeared on the bottom
@@ -59,7 +64,7 @@ unsigned char cli_get_next_argument_iterative(int* iterator, const char* str, ch
     unsigned char quote=0;
     (*new_arg_len)=0;
     // For each character(c) in string(str)
-    for((*iterator);(*iterator)<len; (*iterator)++)
+    for((*iterator)=(*iterator);(*iterator)<len; (*iterator)++)
     {
         char c=str[*iterator];
         // Toggle quote to ignore whitespaces when c is a quote (" or ') and continue
@@ -126,4 +131,5 @@ void cli_print(cli_terminal_t* term, const char* str )
 void cli_clear(cli_terminal_t* term)
 {
     memset(term->buffer, 0, term->buffersize);
+    memset(term->colors, 0, term->buffersize);
 }
