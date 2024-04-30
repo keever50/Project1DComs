@@ -1,4 +1,5 @@
-#ifdef TEST_MAIN
+#ifdef testhayan
+#include <Arduino.h>
 
 //hayan//
 //resv pin3 
