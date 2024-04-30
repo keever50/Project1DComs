@@ -28,11 +28,11 @@ int ldrIndex = 0;
 int potIndex = 0;
 
 
-light();
-Temp();
-pot();
-storeReading(int value, int* readings, int* index);
-printStats();
+void light();
+void Temp();
+void pot();
+void storeReading(int value, int* readings, int* index);
+void printStats();
 
 void setup()
 {
