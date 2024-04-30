@@ -6,7 +6,8 @@
 // zender pin11
 
 
-#include <DFRobot_LCD.h>
+// #include <DFRobot_LCD.h>
+#include <DFRobot_RGBLCD1602.h>
 
 
 int ThermistorPin = A1;
