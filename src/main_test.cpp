@@ -35,7 +35,7 @@ void storeReading(int value, int* readings, int* index);
 void printStats();
 
 void res();
-void zend();
+void zend(uint8_t);
 
 void setup()
 {
@@ -45,14 +45,14 @@ void setup()
 
 void loop()
 {
-  for (int i = 0; i < numReadings; i++) 
-  {
-    Temp();
-    light();
-    pot();
-    printStats(); // Print statistics after collecting 10 readings
-    delay(1000); // Delay before taking the next set of readings
-  }
+  // for (int i = 0; i < numReadings; i++) 
+  // {
+  //   Temp();
+  //   light();
+  //   pot();
+  //   printStats(); // Print statistics after collecting 10 readings
+  //   delay(1000); // Delay before taking the next set of readings
+  // }
 }
 
 void zend(uint8_t source_van_aanvrager)
