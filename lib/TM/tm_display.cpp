@@ -2,7 +2,7 @@
     Test module display helper functions.
     Written by Kevin Witteveen
 */
-
+#ifdef TEST_MODULE
 
 #include <tm_display.h>
 #include <avr/wdt.h>
@@ -203,3 +203,5 @@ int tm_entry(TFT_22_ILI9225& tft, char* buff, int *buff_pos, int buff_len)
     return 1;
 
 }
+
+#endif

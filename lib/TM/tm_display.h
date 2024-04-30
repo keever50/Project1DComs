@@ -2,7 +2,7 @@
     Test module display helper functions.
     Written by Kevin Witteveen
 */
-
+#ifdef TEST_MODULE
 
 #pragma once
 #include <cli_processing.h>
@@ -19,3 +19,5 @@ void tm_test_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli);
 void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli);
 // Returns 0 when user is done typing
 int tm_entry(TFT_22_ILI9225& tft, char* buff, int *buff_pos, int buff_len);
+
+#endif
