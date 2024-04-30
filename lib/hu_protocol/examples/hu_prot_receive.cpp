@@ -33,6 +33,7 @@ void loop()
     uint8_t data_length = packet.length-HU_PROTOCOL_MIN_PACKET_LEN;
     uint8_t* data = packet.data;
 
+
     // Wait a little
     delay(500);
 }

@@ -15,6 +15,8 @@
 #define HU_PROTOCOL_MAX_PACKET_SIZE (HU_PROTOCOL_MIN_PACKET_LEN+HU_PROTOCOL_MAX_DATA_SIZE)
 
 
+#define HU_PROTOCOL_FUNCTION_OPVRAAG_MEETWAARDES    0x05
+#define HU_PROTOCOL_FUNTION_OVERDRAGEN_MEETWAARDES    0x06
 #define HU_PROTOCOL_TIMEOUT 500
 #define HU_PROTOCOL_BUFFER_SIZE RH_ASK_MAX_MESSAGE_LEN
 
@@ -47,6 +49,7 @@ hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet);
 // Decodes a packet. Returns hu_prot_receive_err_t. Check this enum for errors.
 hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet);
 
+// Returns 0 on success
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet);
 
 void hu_protocol_print_packet( hu_packet_t* packet );

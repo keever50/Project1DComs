@@ -171,6 +171,21 @@ void loop()
   // tm_draw_cli(tft, cli);
 
 
+  hu_packet_t packet;
+  packet.start=HU_PROTOCOL_START_BYTE;
+  packet.end=HU_PROTOCOL_END_BYTE;
+    
+  packet.function=HU_PROTOCOL_FUNTION_OVERDRAGEN_MEETWAARDES;
+  packet.length=(HU_PROTOCOL_MIN_PACKET_LEN+(4*sizeof(float));
+  
+  packet.data[0]=24;
+
+
+  hu_protocol_transmit( &rh_ask, &packet );
+
+  
+
+
   delay(10);
 }
 
