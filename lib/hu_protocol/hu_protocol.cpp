@@ -4,6 +4,7 @@
 uint8_t hu_protocol_buffer[HU_PROTOCOL_BUFFER_SIZE];
 char hu_protocol_tag_receive[]="PROTOCOL RECEIVE";
 
+
 // Written by Marijn Boumans & Kevin Witteveen
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet)
 {
