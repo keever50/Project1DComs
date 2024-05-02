@@ -151,8 +151,6 @@ unsigned char cli_execute( cli_terminal_t* term, const char* command, cli_execut
         return -1; 
     }
     cli_get_next_argument_iterative(&iter, command, arg, maxarglen, &arglen);   
-    cli_print(term,arg);
-    cli_draw(term);
     for(int i=0;i<amount;i++)
     {
         const char* name = executables->executable_names[i];

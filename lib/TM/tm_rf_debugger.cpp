@@ -205,7 +205,7 @@ void rf_debug_receive(cli_terminal_t* term)
         cli_print(term, "\n");
         cli_draw(term);
         memset(tm_rf_debug_packet_buffer, 0, HU_PROTOCOL_BUFFER_SIZE);
-
+        term->current_color=TM_WHITE;
     }
 
 }
