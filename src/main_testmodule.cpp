@@ -10,6 +10,7 @@
 #include <avr/wdt.h>
 #include <tm_display.h>
 #include <MemoryFree.h>
+#include <tm_rf_debugger.h>
 
 // TFT
 #include "TFT_22_ILI9225.h"
@@ -21,6 +22,26 @@ TFT_22_ILI9225 tft = TFT_22_ILI9225(TFT_RST, TFT_RS, TFT_CS, TFT_LED, TFT_BRIGHT
 
 // RADIO
 RH_ASK rh_ask(RA_BITRATE, RA_RX, RA_TX, RA_TR, false);
+
+
+// Commands
+#define MAIN_EXECS  3
+int showmemory(cli_terminal_t* term, const char* full_command);
+int main_help(cli_terminal_t* term, const char* full_command);
+void command( const char* cmd );
+static cli_executables_t mainexec;
+static cli_function mainexecs[MAIN_EXECS]
+{
+  rf_debug_open,
+  showmemory,
+  main_help
+};
+static const char* mainnames[MAIN_EXECS]=
+{
+  "debug",
+  "mem",
+  "help"
+};
 
 // override the weak attribute of the logging2 library raw printing output
 int testpos=0;
@@ -38,7 +59,11 @@ void log2_log_raw( const char* msg )
   testpos++;
 }
 
-
+// Override weak function of CLI
+void cli_draw( cli_terminal_t* term )
+{
+  tm_draw_cli( tft, *term );
+}
 
 cli_terminal_t cli;
 
@@ -49,35 +74,43 @@ uint16_t colors[]=
   COLOR_BLUE
 };
 
+int showmemory(cli_terminal_t* term, const char* full_command)
+{
+  cli_print(term, "memory: ");
+  char* msg = (char*)malloc(32);
+  if(!msg) return 1;
+  snprintf(msg, 32, "%db free\n", freeMemory()+32);
+  cli_print(term, msg);
+  cli_draw(term);
+  free(msg); 
+  return 0;
+}
+
+int main_help(cli_terminal_t* term, const char* full_command)
+{
+  cli_print(term, "commands:\n");
+  for(int i=0;i<MAIN_EXECS;i++)
+  {
+    cli_print(term, mainnames[i]);
+    cli_put(term, '\n');
+  }
+
+  cli_draw(term);
+  return 0;
+
+}
+
+
 void command( const char* cmd )
 {
-  int iter=0, arg_len=0;
-  char* arg = (char*)malloc(32);
-  if(arg==NULL)
-  {
-    Serial.println("mem err");
-    free(arg);
-    return;
-  }
-  memset(arg, 0, 32);
 
-  cli_get_next_argument_iterative(&iter, cmd, arg, 32, &arg_len);
-
-  if(!strcmp(arg,"test"))
-  {
-    cli_print(&cli, "testing\n");
-    cli_get_next_argument_iterative(&iter, cmd, arg, 32, &arg_len);
-    int num = atoi(arg);
-    for(int n=0;n<num;n++)
-    {
-      cli_print(&cli, "LINE\n");
-      tm_draw_cli(tft,cli);
-    }
-    
-  }
-
-  free(arg);
+  mainexec.number_of_executables=MAIN_EXECS;
+  mainexec.executable_names=mainnames;
+  mainexec.executable_functions=mainexecs;
+  cli_execute(&cli, cmd, &mainexec);
 }
+
+
 
 // Setup
 void setup() 
@@ -138,18 +171,23 @@ void setup()
   char* msg = (char*)malloc(32);
   snprintf(msg, 32, "%db free\n", freeMemory()+32);
   cli_print(&cli, msg);
-  tm_draw_cli(tft,cli);
   free(msg);
 
+  //Commands
+  cli_print(&cli, "enter help\nfor commands\n");
+  cli_draw(&cli);
+
+
   wdt_reset();
+
+
 }
 
 // Loop
 void loop() 
 {
 
-
-  char entry[100];
+  char entry[31];
   static int entry_pos=0;
   char t = tm_entry(tft, entry, &entry_pos, 30);
   if(!t)
@@ -160,67 +198,12 @@ void loop()
     command(entry);
   }
   wdt_reset();
-
-
-  // cli.current_color=0b00011000;
-  // char buf[64];
-  // static char count=0;
-  // snprintf(buf, sizeof(buf), "Hello,\nworld!\n%d times\n\n", count++);
-  // cli.current_color=random(0,0xFF);
-  // cli_print(&cli, buf);
-  // tm_draw_cli(tft, cli);
-
-
-  hu_packet_t packet;
-  packet.start=HU_PROTOCOL_START_BYTE;
-  packet.end=HU_PROTOCOL_END_BYTE;
-    
-  packet.function=HU_PROTOCOL_FUNTION_OVERDRAGEN_MEETWAARDES;
-  packet.length=(HU_PROTOCOL_MIN_PACKET_LEN+(4*sizeof(float));
-  
-  packet.data[0]=24;
-
-
-  hu_protocol_transmit( &rh_ask, &packet );
-
-  
-
-
   delay(10);
+
+
+  
 }
 
-
-//Test stuff
-  // hu_packet_t packet;
-
-  // static unsigned long next=0;
-  // if(millis()-next>7000)
-  // {
-  //   packet.function=0x02;
-  //   packet.length=HU_PROTOCOL_MIN_PACKET_LEN+HU_PROTOCOL_MAX_DATA_SIZE;
-  //   for(int i=0;i<HU_PROTOCOL_MAX_DATA_SIZE;i++)
-  //   {
-  //     packet.data[i]=random(0x00,0xFF);
-  //   }
-  //   packet.start=HU_PROTOCOL_START_BYTE;
-  //   packet.end=HU_PROTOCOL_END_BYTE;
-
-
-  //   Serial.println("Transmit");
-  //   hu_protocol_transmit( &rh_ask, &packet );
-  //   next=millis();
-  // }
-
-  // // Receive
-  // hu_prot_receive_err_t err = hu_protocol_receive( &rh_ask, &packet );
-  // Serial.print("Receive: ");
-  // Serial.println(err);
-  // if(err != HU_PROT_RECEIVE_IGNORE && err != HU_PROT_RECEIVE_LISTENING)
-  // {
-  //   hu_protocol_print_packet(&packet);
-  // }
-
-  // log2_log(LOG2_INFO, "A", "SDADSdfsf",5);
 
 
 #endif
