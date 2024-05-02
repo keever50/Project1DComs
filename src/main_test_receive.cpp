@@ -2,8 +2,18 @@
 
 #include <Arduino.h>
 #include <RH_ASK.h>
+#include <hu_protocol.h>
 
-RH_ASK driver(1000, 3, 11, 0, false);
+/****************
+     RADIO
+****************/
+// Pins
+#define RA_BITRATE          500
+#define RA_RX               3
+#define RA_TX               5
+#define RA_TR               2
+
+RH_ASK driver(RA_BITRATE, RA_RX, RA_TX, RA_TR, false);
 
 
 void setup()
@@ -24,22 +34,13 @@ void setup()
 
 void loop()
 {
-    uint8_t len;
-    uint8_t buf[RH_ASK_MAX_MESSAGE_LEN];
-   // driver.printBuffer("buffer:", buf, 4);
-    // d
-    if(driver.recv(buf, &len))
+    hu_packet_t packet;
+    hu_prot_receive_err_t err = hu_protocol_receive( &driver, &packet );
+    if(err == HU_PROT_RECEIVE_RECEIVED)
     {
-        Serial.println(len);
-        Serial.print("start[");
-        for(int i=0;i<RH_ASK_MAX_MESSAGE_LEN;i++)
-        {
-            Serial.print((char)buf[i]);
-        }
-        Serial.println("]end");
-        memset(buf, 0, RH_ASK_MAX_MESSAGE_LEN);
-
+        hu_protocol_print_packet(&packet);
     }
+
     delay(100);
 }
 
