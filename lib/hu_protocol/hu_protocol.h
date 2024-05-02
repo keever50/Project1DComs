@@ -1,10 +1,10 @@
-// Written by Kevin Witteveen
+
 
 #pragma once
 #include <Arduino.h>
 #include <RH_ASK.h>
 
-
+// Written by Kevin Witteveen
 #define HU_PROTOCOL_START_BYTE      0x01 // Starting byte
 #define HU_PROTOCOL_END_BYTE        0x04 // Ending byte
 #define HU_PROTOCOL_MAX_DATA_SIZE   36 // Most data a packet can send
@@ -22,7 +22,7 @@
 
 
 
-
+// Written by Kevin Witteveen
 typedef enum hu_prot_receive_err_e
 {
     HU_PROT_RECEIVE_RECEIVED=0,             // We received a packet
@@ -45,16 +45,38 @@ typedef struct hu_packet_s
     uint8_t end;
     uint8_t LRC;
 }hu_packet_t;
+//
 
+
+// Written by Hayan Rafee
+struct hu_protocol_SensorReadings {// selectie floats in een bepaalde orde 
+  float avgTemp;
+  float avgLDR;
+  float avgPot;
+  float maxTemp;
+  float maxLDR;
+  float maxPot;
+  float minTemp;
+  float minLDR;
+  float minPot;
+};
+void hu_protocol_MM_structToByteArray(const hu_protocol_SensorReadings &readings, byte* byteArray);
+void hu_protocol_MM_checkByteArray(byte* byteArray);
+//
+
+
+// Written by Kevin Witteveen
 // Receives and decodes a packet. Returns hu_prot_receive_err_t. Check this enum for errors.
 hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet);
 // Decodes a packet. Returns hu_prot_receive_err_t. Check this enum for errors.
 hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet);
-
 // Returns 0 on success
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet);
-
+// Prints the packet
 void hu_protocol_print_packet( hu_packet_t* packet );
+
 
 // Written by Marijn Boumans
 uint8_t hu_protocol_encode_address(const char* str);
+
+

@@ -229,3 +229,47 @@ uint8_t hu_protocol_encode_address(const char* str) {
     
 }
 
+void hu_protocol_MM_structToByteArray(const hu_protocol_SensorReadings &readings, byte* byteArray) 
+{
+  byte* ptr = (byte*)&readings;               // Convert float values to byte arrays
+  for (uint8_t i = 0; i < sizeof(hu_protocol_SensorReadings); i++) 
+  {
+    byteArray[i] = *ptr++;
+  }
+  Serial.println("Array of bytes:"); // Print the array of bytes
+  for (uint8_t i = 0; i < sizeof(hu_protocol_SensorReadings); i++) 
+  {
+    Serial.println(byteArray[i], BIN);
+  }
+  Serial.println();
+  Serial.println();
+}
+
+void hu_protocol_MM_checkByteArray(byte* byteArray) {     //check function of het omzetten goed is gegaan(wordt niet gebruikt)
+  // Retrieve the bytes from the byteArray    // de bytes array is pakket - (SoS + sours + dest + PL + LRC + FC)      
+  hu_protocol_SensorReadings readings;
+  byte* ptr = (byte*)&readings;
+  for (uint8_t i = 0; i < sizeof(hu_protocol_SensorReadings); i++) {
+    *ptr++ = byteArray[i];
+  }
+  // Print the converted floats
+  Serial.println("Converted floats from bytes:");
+  Serial.print("Max Temp: ");
+  Serial.println(readings.maxTemp);
+  Serial.print("Min Temp: ");
+  Serial.println(readings.minTemp);
+  Serial.print("Avg Temp: ");
+  Serial.println(readings.avgTemp);
+  Serial.print("Max LDR: ");
+  Serial.println(readings.maxLDR);
+  Serial.print("Min LDR: ");
+  Serial.println(readings.minLDR);
+  Serial.print("Avg LDR: ");
+  Serial.println(readings.avgLDR);
+  Serial.print("Max Pot: ");
+  Serial.println(readings.maxPot);
+  Serial.print("Min Pot: ");
+  Serial.println(readings.minPot);
+  Serial.print("Avg Pot: ");
+  Serial.println(readings.avgPot);
+}
