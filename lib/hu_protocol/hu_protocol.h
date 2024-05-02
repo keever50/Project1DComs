@@ -5,20 +5,22 @@
 #include <RH_ASK.h>
 
 
-#define HU_PROTOCOL_START_BYTE      0x01
-#define HU_PROTOCOL_END_BYTE        0x04
-#define HU_PROTOCOL_MAX_DATA_SIZE   36
-#define HU_PROTOCOL_FUNCTION_RANGE  13
-#define HU_PROTOCOL_MIN_PACKET_LEN  7
-#define HU_PROTOCOL_START_LENGTH    5
-#define HU_PROTOCOL_END_LENGTH      2
-#define HU_PROTOCOL_MAX_PACKET_SIZE (HU_PROTOCOL_MIN_PACKET_LEN+HU_PROTOCOL_MAX_DATA_SIZE)
-
+#define HU_PROTOCOL_START_BYTE      0x01 // Starting byte
+#define HU_PROTOCOL_END_BYTE        0x04 // Ending byte
+#define HU_PROTOCOL_MAX_DATA_SIZE   36 // Most data a packet can send
+#define HU_PROTOCOL_FUNCTION_RANGE  13 // Highest function we can have
+#define HU_PROTOCOL_MIN_PACKET_LEN  7 // Minimal amount of total bytes the smallest packet can have
+#define HU_PROTOCOL_START_LENGTH    2 // Bytes before length
+#define HU_PROTOCOL_END_LENGTH      2 // Remaining bytes after the data
+#define HU_PROTOCOL_LENGTH_NON_DATA 4 // The bytes in length that are not data
+#define HU_PROTOCOL_MAX_PACKET_SIZE (HU_PROTOCOL_MIN_PACKET_LEN+HU_PROTOCOL_MAX_DATA_SIZE) // Maximum total size of a packet
+#define HU_PROTOCOL_BUFFER_SIZE RH_ASK_MAX_MESSAGE_LEN // Size of the working buffer. Do not change
 
 #define HU_PROTOCOL_FUNCTION_OPVRAAG_MEETWAARDES    0x05
 #define HU_PROTOCOL_FUNTION_OVERDRAGEN_MEETWAARDES    0x06
 #define HU_PROTOCOL_TIMEOUT 500
-#define HU_PROTOCOL_BUFFER_SIZE RH_ASK_MAX_MESSAGE_LEN
+
+
 
 
 typedef enum hu_prot_receive_err_e
@@ -35,7 +37,7 @@ typedef enum hu_prot_receive_err_e
 typedef struct hu_packet_s
 {
     uint8_t start;
-    uint8_t length;
+    uint8_t length; // Aka remaining bytes after this until LRC. (Start, length and LRC are not included)
     uint8_t function;
     uint8_t source;
     uint8_t destination;
