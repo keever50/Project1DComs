@@ -26,6 +26,17 @@ typedef struct
     uint16_t current_colunn;
 } cli_terminal_t;
 
+typedef int(*cli_function)(cli_terminal_t* term, const char* full_command);
+
+typedef struct
+{
+    cli_function* executable_functions; // Pointer to array containing .number_of_executable functions
+    const char** executable_names; // Pointer to array containing .number_of_executable null-terminated strings
+    int number_of_executables; // The amount of executables
+} cli_executables_t;
+
+// To be implemented by user
+void cli_draw( cli_terminal_t* term ) __attribute__((weak));
 
 /*
     Sets a character on a specific x, y coordinate.
@@ -63,6 +74,13 @@ int* new_arg_len is where the size of the new argument we found will be written 
 Returns 0 when we reached the last argument, otherwise 1.
 */
 unsigned char cli_get_next_argument_iterative(int* iterator, const char* str, char* arg, int max_arg_len, int* new_arg_len );
+
+/*
+    Takes a const char* command, where the first argument is used to find the right executable found in cli_executables_t* executables.
+    Returns 0 on success, -1 on command not found. The executable can also return anything.
+*/
+unsigned char cli_execute( cli_terminal_t* term, const char* command, cli_executables_t* executables );
+
 
 #ifdef __cplusplus
 }

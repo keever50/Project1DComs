@@ -130,6 +130,24 @@ void cli_print(cli_terminal_t* term, const char* str )
 
 void cli_clear(cli_terminal_t* term)
 {
+    term->current_colunn=0;
+    term->current_line=0;
+    term->current_color=0b11111111;
     memset(term->buffer, 0, term->buffersize);
     memset(term->colors, 0, term->buffersize);
+}
+
+unsigned char cli_execute( cli_terminal_t* term, const char* command, cli_executables_t* executables )
+{
+    int amount = executables->number_of_executables;
+    
+    for(int i=0;i<amount;i++)
+    {
+        const char* name = executables->executable_names[i];
+        if(!strcmp(name, command))
+        {
+            return executables->executable_functions[i](term, command);
+        }
+    }
+    return -1;
 }
