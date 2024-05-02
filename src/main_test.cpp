@@ -66,8 +66,7 @@ void zend(uint8_t source_van_aanvrager)
   packet.source = 0//
 
 //data
-//LRC
-//
+
 
   hu_protocol_transmit( &rh_ask, &packet );
 }
