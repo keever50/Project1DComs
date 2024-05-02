@@ -2,8 +2,13 @@
 
 #include <RH_ASK.h>
 #include <SPI.h> // Not actually used but needed to compile
+#include <hu_protocol.h>
 
-RH_ASK driver(1000,3,11,0,false);
+#define RA_BITRATE          500
+#define RA_RX               3
+#define RA_TX               5
+#define RA_TR               2
+RH_ASK driver(RA_BITRATE,RA_RX,RA_TX,RA_TR,false);
 
 void setup()
 {
@@ -14,10 +19,17 @@ void setup()
 
 void loop()
 {
-    char *msg = "TEam_3!_is_het_beste";
-    driver.send((uint8_t *)msg, strlen(msg));
-    driver.waitPacketSent();
-    delay(1000+random(100,2000));
+    hu_packet_t packet;
+    packet.start=HU_PROTOCOL_START_BYTE;
+    packet.function=0x04;
+    packet.source=hu_protocol_encode_address("EV2AGROEP1CM");
+    packet.destination=hu_protocol_encode_address("EV2AGROEP1MM");
+    packet.length=HU_PROTOCOL_LENGTH_NON_DATA+2; // Do not include LRC in length
+    packet.data[0]=0xAA;
+    packet.data[1]=0xBB;
+    packet.end=HU_PROTOCOL_END_BYTE;
+    hu_protocol_transmit(&driver, &packet);
+    delay(8000);
 }
 
 #endif
