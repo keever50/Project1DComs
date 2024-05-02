@@ -194,3 +194,38 @@ void hu_protocol_print_packet( hu_packet_t* packet )
     Serial.println("-----------------------------------------\n");
   
 }
+
+
+// Written by Marijn Boumans
+uint8_t hu_protocol_encode_address(const char* str) {
+    uint8_t classBits, groupBits, moduleBits;
+
+    // Class
+    if (strncmp(str, "EV2A", 4) == 0) classBits = 0b00;
+    else if (strncmp(str, "EV2B", 4) == 0) classBits = 0b01;
+    else if (strncmp(str, "EV2C", 4) == 0) classBits = 0b10;
+    else if (strncmp(str, "EV2D", 4) == 0) classBits = 0b11;
+    else return 0;  // Invalid class
+
+    // Group
+    if (strncmp(str + 4, "GROEP1", 6) == 0) groupBits = 0b001;
+    else if (strncmp(str + 4, "GROEP2", 6) == 0) groupBits = 0b010;
+    else if (strncmp(str + 4, "GROEP3", 6) == 0) groupBits = 0b011;
+    else if (strncmp(str + 4, "GROEP4", 6) == 0) groupBits = 0b100;
+    else if (strncmp(str + 4, "GROEP5", 6) == 0) groupBits = 0b101;
+    else if (strncmp(str + 4, "GROEP6", 6) == 0) groupBits = 0b110;
+    else if (strncmp(str + 4, "GROEP7", 6) == 0) groupBits = 0b111;
+    else return 0;  // Invalid group
+
+    // Module
+    if (strncmp(str + 10, "MM", 8) == 0) moduleBits = 0b000;
+    else if (strncmp(str + 10, "CM", 8) == 0) moduleBits = 0b001;
+    else if (strncmp(str + 10, "NM", 8) == 0) moduleBits = 0b010;
+    else if (strncmp(str + 10, "CO", 8) == 0) moduleBits = 0b011;
+    else if (strncmp(str + 10, "TM", 8) == 0) moduleBits = 0b100;
+    else return 0;  // Invalid module
+
+    return classBits | (groupBits << 2) | (moduleBits << 5);
+    
+}
+

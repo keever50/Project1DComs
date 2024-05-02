@@ -55,3 +55,6 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet);
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet);
 
 void hu_protocol_print_packet( hu_packet_t* packet );
+
+// Written by Marijn Boumans
+uint8_t hu_protocol_encode_address(const char* str);

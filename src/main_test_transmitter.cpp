@@ -22,8 +22,8 @@ void loop()
     hu_packet_t packet;
     packet.start=HU_PROTOCOL_START_BYTE;
     packet.function=0x04;
-    packet.source=0x01;
-    packet.destination=0x02;
+    packet.source=hu_protocol_encode_address("EV2AGROEP1CM");
+    packet.destination=hu_protocol_encode_address("EV2AGROEP1MM");
     packet.length=HU_PROTOCOL_LENGTH_NON_DATA+2; // Do not include LRC in length
     packet.data[0]=0xAA;
     packet.data[1]=0xBB;
