@@ -1,24 +1,30 @@
 #ifdef TEST_CM
-//Dirk's Code
-#define Recieve_Pin 3
-#define Transmit_Pin 11
-
 #define CM_Groep3_Adres 0x2C
+
+RH_ASK rh_ask(500, 3, 11, 0, false); // Bitrate, receive pin, transmit pin, select pin(unused), select inverse(unused)
 
 void setup()
 {
 Serial.begin(9600);
+rh_ask.init();
 }
 
 void loop()
 {
+    hu_packet_t packet;
 
+    hu_prot_receive_err_t err = hu_protocol_receive( &rh_ask, &packet );
+    if(err != HU_PROT_RECEIVE_IGNORE && err != HU_PROT_RECEIVE_LISTENING)
+    {
+        hu_protocol_print_packet(&packet);
+    } 
+    uint8_t Functie = packet.function;
+    Functiecode_Receive(&Functie);
 }
 
-void Functiecode_Recieve()
+void Functiecode_Receive(uint8_t* FunctieCode)
 {
-    uint8_t* FunctieCode = &
-    switch (FunctieCode)
+    switch (FunctieCode);
     {
     case 0xC0:
     break;
@@ -81,7 +87,6 @@ void Functiecode_Recieve()
 Error(uint8_t* Error_nummer)
 {
     Serial.print("Error:");
-
     switch (Error_nummer)
     {
     case 0:
@@ -89,9 +94,6 @@ Error(uint8_t* Error_nummer)
     break;
     case 1:
     Serial.print("functiecode is onlogisch voor comunicatie module")
-    
-    default:
-
     break;
     }
 }
