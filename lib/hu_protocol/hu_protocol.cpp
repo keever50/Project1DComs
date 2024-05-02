@@ -229,6 +229,7 @@ uint8_t hu_protocol_encode_address(const char* str) {
     
 }
 
+// Written by Hayan Rafee
 void hu_protocol_MM_structToByteArray(const hu_protocol_SensorReadings &readings, byte* byteArray) 
 {
   byte* ptr = (byte*)&readings;               // Convert float values to byte arrays
