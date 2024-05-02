@@ -10,10 +10,17 @@
 
 #define CLI_FONT_HEIGHT 8
 #define CLI_FONT_WIDTH  6
-#define CLI_HEIGHT  10
+#define CLI_HEIGHT  6
 #define CLI_WIDTH   20
 #define SCR_WIDTH   220
 #define SCR_HEIGHT  176
+
+#define TM_RED  0b11100000
+#define TM_GREEN 0b00011000
+#define TM_WHITE 0b11111111
+#define TM_BLACK 0
+#define TM_BLUE 0b00000111
+
 
 void tm_test_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli);
 void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli);

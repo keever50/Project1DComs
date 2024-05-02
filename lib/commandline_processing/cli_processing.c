@@ -130,6 +130,39 @@ void cli_print(cli_terminal_t* term, const char* str )
 
 void cli_clear(cli_terminal_t* term)
 {
+    term->current_colunn=0;
+    term->current_line=0;
+    term->current_color=0b11111111;
     memset(term->buffer, 0, term->buffersize);
     memset(term->colors, 0, term->buffersize);
+}
+
+unsigned char cli_execute( cli_terminal_t* term, const char* command, cli_executables_t* executables )
+{
+    const uint8_t maxarglen = 32;
+    int amount = executables->number_of_executables;
+
+    int iter=0, arglen=0;   
+    char* arg = (char*)malloc(maxarglen);
+    if(!arg)
+    {
+        cli_print(term,"NO_MEM\n");
+        cli_draw(term);   
+        return -1; 
+    }
+    cli_get_next_argument_iterative(&iter, command, arg, maxarglen, &arglen);   
+    cli_print(term,arg);
+    cli_draw(term);
+    for(int i=0;i<amount;i++)
+    {
+        const char* name = executables->executable_names[i];
+        if(!strcmp(name, arg))
+        {
+            free(arg);
+            return executables->executable_functions[i](term, command);
+        }
+    }
+
+    free(arg);
+    return -1;
 }

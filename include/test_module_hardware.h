@@ -1,4 +1,4 @@
-#ifdef testmodule
+#ifdef TEST_MODULE
 #pragma once
 
 /****************

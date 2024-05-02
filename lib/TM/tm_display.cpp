@@ -160,7 +160,7 @@ int tm_entry(TFT_22_ILI9225& tft, char* buff, int *buff_pos, int buff_len)
 
     // Request character from keyboard
     Wire.requestFrom(0x5F, 2);
-    char c = 0;//Wire.read();
+    char c = Wire.read();
     Wire.read();
 
     // Or serial

@@ -10,7 +10,7 @@ int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet)
 {
     // Prepare transmit buffer //
 
-    // Move start byte further away for preambles
+    // Move start byte further away for preambles for testing only
     int offset=0;
     int i=offset;
 
@@ -22,7 +22,8 @@ int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet)
     hu_protocol_buffer[i++]=packet->destination;
 
     // Data
-    for(int p=0;p<packet->length-HU_PROTOCOL_MIN_PACKET_LEN;p++)
+    int data_len = packet->length-HU_PROTOCOL_LENGTH_NON_DATA;
+    for(int p=0;p<data_len;p++)
     {
         hu_protocol_buffer[i++]=packet->data[p];
     }
@@ -31,12 +32,12 @@ int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet)
     hu_protocol_buffer[i++]=packet->end;
     
     // LRC
-    packet->LRC = get_LRC(hu_protocol_buffer+offset, packet->length-1);
+    packet->LRC = get_LRC(hu_protocol_buffer+offset, HU_PROTOCOL_START_LENGTH+packet->length);
     hu_protocol_buffer[i++]=packet->LRC;
 
 
     // Transmit //
-    if(!driver->send(hu_protocol_buffer,packet->length+offset)) return 1;
+    if(!driver->send(hu_protocol_buffer,HU_PROTOCOL_START_LENGTH+packet->length+1+offset)) return 1;  // Include LRC
     if(!driver->waitPacketSent(HU_PROTOCOL_TIMEOUT)) return 2;
 
 
@@ -94,7 +95,7 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
 
     // Do some checks before getting the data
     // Length is too long
-    if(packet->length>HU_PROTOCOL_MAX_PACKET_SIZE)
+    if(packet->length>HU_PROTOCOL_MAX_DATA_SIZE+HU_PROTOCOL_LENGTH_NON_DATA)
     {
         Serial.print("receive packet error: packet too long. Length=");
         Serial.print(packet->length);
@@ -102,7 +103,7 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
         return HU_PROT_RECEIVE_TOO_LONG;
     }
     // Length is too short
-    if(packet->length<HU_PROTOCOL_MIN_PACKET_LEN)
+    if(packet->length<HU_PROTOCOL_LENGTH_NON_DATA)
     {
         Serial.print("receive packet error: packet too short. Length=");
         Serial.print(packet->length);
@@ -111,7 +112,7 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     }
 
 
-    if(packet->function>HU_PROTOCOL_FUNCTION_RANGE || packet->function < 0)
+    if(packet->function>HU_PROTOCOL_FUNCTION_RANGE)
     {
         Serial.print("receive packet error: unknown function [");
         Serial.print(packet->function);
@@ -120,7 +121,7 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     }
 
     // Transfer the data. This transfers nothing when length is the minimum packet length.
-    int data_length = packet->length-HU_PROTOCOL_MIN_PACKET_LEN;
+    int data_length = packet->length-HU_PROTOCOL_LENGTH_NON_DATA;
     if(data_length>0)
     {
         memcpy(packet->data, hu_protocol_buffer+i, data_length);
@@ -142,7 +143,7 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     }
 
     // Calculate and check whether the LRC is correct or not
-    uint8_t LRC = get_LRC(hu_protocol_buffer+offset, packet->length-1);
+    uint8_t LRC = get_LRC(hu_protocol_buffer+offset, HU_PROTOCOL_START_LENGTH+packet->length); 
     if(LRC!=packet->LRC)
     {
         Serial.print("receive packet error: Received LRC [");
@@ -175,7 +176,7 @@ void hu_protocol_print_packet( hu_packet_t* packet )
     Serial.print("  Destination: ");
     Serial.println(packet->destination);
  
-    int data_length = packet->length-HU_PROTOCOL_MIN_PACKET_LEN;
+    int data_length = packet->length-HU_PROTOCOL_LENGTH_NON_DATA;
     Serial.print("  Data: [");
     for(int i=0;i<data_length;i++)
     {
@@ -193,3 +194,38 @@ void hu_protocol_print_packet( hu_packet_t* packet )
     Serial.println("-----------------------------------------\n");
   
 }
+
+
+// Written by Marijn Boumans
+uint8_t hu_protocol_encode_address(const char* str) {
+    uint8_t classBits, groupBits, moduleBits;
+
+    // Class
+    if (strncmp(str, "EV2A", 4) == 0) classBits = 0b00;
+    else if (strncmp(str, "EV2B", 4) == 0) classBits = 0b01;
+    else if (strncmp(str, "EV2C", 4) == 0) classBits = 0b10;
+    else if (strncmp(str, "EV2D", 4) == 0) classBits = 0b11;
+    else return 0;  // Invalid class
+
+    // Group
+    if (strncmp(str + 4, "GROEP1", 6) == 0) groupBits = 0b001;
+    else if (strncmp(str + 4, "GROEP2", 6) == 0) groupBits = 0b010;
+    else if (strncmp(str + 4, "GROEP3", 6) == 0) groupBits = 0b011;
+    else if (strncmp(str + 4, "GROEP4", 6) == 0) groupBits = 0b100;
+    else if (strncmp(str + 4, "GROEP5", 6) == 0) groupBits = 0b101;
+    else if (strncmp(str + 4, "GROEP6", 6) == 0) groupBits = 0b110;
+    else if (strncmp(str + 4, "GROEP7", 6) == 0) groupBits = 0b111;
+    else return 0;  // Invalid group
+
+    // Module
+    if (strncmp(str + 10, "MM", 8) == 0) moduleBits = 0b000;
+    else if (strncmp(str + 10, "CM", 8) == 0) moduleBits = 0b001;
+    else if (strncmp(str + 10, "NM", 8) == 0) moduleBits = 0b010;
+    else if (strncmp(str + 10, "CO", 8) == 0) moduleBits = 0b011;
+    else if (strncmp(str + 10, "TM", 8) == 0) moduleBits = 0b100;
+    else return 0;  // Invalid module
+
+    return classBits | (groupBits << 2) | (moduleBits << 5);
+    
+}
+
