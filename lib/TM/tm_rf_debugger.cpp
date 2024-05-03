@@ -4,10 +4,13 @@
 #include <biterrors.h>
 #define TM_RF_MAX_ERRORS    10
 
-
-hu_packet_t* tm_rf_debug_packet;
+char tm_rf_debug_linebuffer[32];
+hu_packet_t tm_rf_debug_packet;
 uint8_t tm_rf_debug_packet_buffer[HU_PROTOCOL_BUFFER_SIZE];
 uint8_t tm_rf_debug_source;
+
+const char* tm_str_ok="OK\n";
+const char* tm_str_err="ERR\n";
 
 // Commands //
 #define TM_RF_DEBUG_EXECS 4
@@ -31,23 +34,18 @@ int rf_debug_ident(cli_terminal_t* term, const char* full_command)
 {
     const uint8_t maxarglen=32;
     int iter=0, arglen=0;
-    char* arg = (char*)malloc(maxarglen+1);
-    if(!arg)
-    {
-        cli_print(term, "NO_MEM\n");
-        cli_draw(term);
-        free(arg);
-        return 1;
-    }
-    cli_get_next_argument_iterative(&iter, full_command, arg, maxarglen, &arglen);
-    cli_get_next_argument_iterative(&iter, full_command, arg, maxarglen, &arglen);   
+    char buff[32];
 
-    tm_rf_debug_source = hu_protocol_encode_address(arg);
-    if(tm_rf_debug_source) cli_print(term, "OK\n");
-    else cli_print(term, "ERR\n");
+    cli_get_next_argument_iterative(&iter, full_command, buff, maxarglen, &arglen);
+    cli_get_next_argument_iterative(&iter, full_command, buff, maxarglen, &arglen);   
+
+    cli_print(term, buff);
+    tm_rf_debug_source = hu_protocol_encode_address(buff);
+    if(tm_rf_debug_source) cli_print(term, tm_str_ok);
+    else cli_print(term, tm_str_err);
     cli_draw(term);    
-
-    free(arg);
+    
+    //free(arg);
     return 0; 
 }
 
@@ -55,23 +53,17 @@ int rf_debug_send_packet(cli_terminal_t* term, const char* full_command)
 {
     const uint8_t maxarglen=32;
     int iter=0, arglen=0;
-    char* arg = (char*)malloc(maxarglen+1);
-    if(!arg)
-    {
-        cli_print(term, "NO_MEM\n");
-        cli_draw(term);
-        free(arg);
-        return 1;
-    }
+    char* arg = tm_rf_debug_linebuffer;
+
     cli_get_next_argument_iterative(&iter, full_command, arg, maxarglen, &arglen);
     cli_get_next_argument_iterative(&iter, full_command, arg, maxarglen, &arglen);   
 
-    tm_rf_debug_packet->destination=hu_protocol_encode_address(arg);
+    tm_rf_debug_packet.destination=hu_protocol_encode_address(arg);
 
-    cli_print(term, "sending...");
+    cli_print(term, "...");
     cli_draw(term);
-    hu_protocol_transmit(&rh_ask, tm_rf_debug_packet);
-    cli_print(term, "done\n");
+    hu_protocol_transmit(&rh_ask, &tm_rf_debug_packet);
+    cli_print(term, tm_str_ok);
     cli_draw(term);
     
     free(arg);
@@ -86,19 +78,19 @@ int rf_debug_generate_packet(cli_terminal_t* term, const char* full_command)
     cli_get_next_argument_iterative(&iter, full_command, arg, maxarglen, &arglen);
     cli_get_next_argument_iterative(&iter, full_command, arg, maxarglen, &arglen);
 
-    tm_rf_debug_packet->start=HU_PROTOCOL_START_BYTE;
-    tm_rf_debug_packet->function=atoi(arg);
-    tm_rf_debug_packet->source=tm_rf_debug_source; // UPDATE THIS WHEN FUNCTION IS READY
+    tm_rf_debug_packet.start=HU_PROTOCOL_START_BYTE;
+    tm_rf_debug_packet.function=atoi(arg);
+    tm_rf_debug_packet.source=tm_rf_debug_source; // UPDATE THIS WHEN FUNCTION IS READY
     // Fill in data length depending on function
-    tm_rf_debug_packet->length=HU_PROTOCOL_LENGTH_NON_DATA+2;
+    tm_rf_debug_packet.length=HU_PROTOCOL_LENGTH_NON_DATA+2;
 
     // Placeholder
-    tm_rf_debug_packet->data[0]=0xAA;
-    tm_rf_debug_packet->data[1]=0xBB;
+    tm_rf_debug_packet.data[0]=0xAA;
+    tm_rf_debug_packet.data[1]=0xBB;
 
-    tm_rf_debug_packet->end=HU_PROTOCOL_END_BYTE;
+    tm_rf_debug_packet.end=HU_PROTOCOL_END_BYTE;
 
-    cli_print(term, "packet generated\n");
+    cli_print(term, tm_str_ok);
     cli_draw(term);
 
     return 0;
@@ -213,21 +205,10 @@ void rf_debug_receive(cli_terminal_t* term)
 int rf_debug_open(cli_terminal_t* term, const char* full_command)
 {
     // Memory allocation
-    char* command_line = (char*)malloc(31); 
-    tm_rf_debug_packet = (hu_packet_t*)malloc(sizeof(hu_packet_t*));
-    if(!tm_rf_debug_packet || !command_line) 
-    {
-        cli_print(term, "NO_MEM\n");
-        cli_draw(term);
-        free(command_line);
-        free(tm_rf_debug_packet);
+    memset(tm_rf_debug_linebuffer, 0, sizeof(tm_rf_debug_linebuffer));
 
-        return 1;
-    }
-    
-    cli_clear(term);
-    cli_print(term, "---RF Debugger---\n");
-    cli_print(term, "enter help\nfor commands\n");
+    //cli_clear(term);
+    cli_print(term, "DEBUG\n");
     cli_draw(term);
 
     cli_executables_t execs;
@@ -238,13 +219,13 @@ int rf_debug_open(cli_terminal_t* term, const char* full_command)
     while(1==1)
     {
         static int entry_pos=0;
-        char t = tm_entry(tft, command_line, &entry_pos, 30);
+        char t = tm_entry(tft, tm_rf_debug_linebuffer, &entry_pos, 30);
         if(!t)
         {
-            cli_print(term, command_line);
+            cli_print(term, tm_rf_debug_linebuffer);
             cli_put(term, '\n');
             cli_draw(term);
-            cli_execute(term, command_line, &execs);
+            cli_execute(term, tm_rf_debug_linebuffer, &execs);
         }
 
         if(rf_debug_receiving) rf_debug_receive(term);
@@ -253,8 +234,6 @@ int rf_debug_open(cli_terminal_t* term, const char* full_command)
         delay(10);
     }
 
-    free(command_line);
-    free(tm_rf_debug_packet);
     return 0;
 }
 

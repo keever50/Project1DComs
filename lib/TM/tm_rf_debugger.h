@@ -4,7 +4,8 @@
 #include <cli_processing.h>
 #include <avr/wdt.h>
 #include <tm_display.h>
-#include <RH_ASK.h>
+#include <RH_ASK_mod.h>
+
 extern TFT_22_ILI9225 tft;
 extern RH_ASK rh_ask;
 

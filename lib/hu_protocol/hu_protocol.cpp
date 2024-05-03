@@ -97,7 +97,7 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     // Length is too long
     if(packet->length>HU_PROTOCOL_MAX_DATA_SIZE+HU_PROTOCOL_LENGTH_NON_DATA)
     {
-        Serial.print("receive packet error: packet too long. Length=");
+        Serial.print(F("receive packet error: packet too long. Length="));
         Serial.print(packet->length);
         Serial.println("");
         return HU_PROT_RECEIVE_TOO_LONG;
@@ -105,7 +105,7 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     // Length is too short
     if(packet->length<HU_PROTOCOL_LENGTH_NON_DATA)
     {
-        Serial.print("receive packet error: packet too short. Length=");
+        Serial.print(F("receive packet error: packet too short. Length="));
         Serial.print(packet->length);
         Serial.println("");
         return HU_PROT_RECEIVE_TOO_LONG;
@@ -114,7 +114,7 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
 
     if(packet->function>HU_PROTOCOL_FUNCTION_RANGE)
     {
-        Serial.print("receive packet error: unknown function [");
+        Serial.print(F("receive packet error: unknown function ["));
         Serial.print(packet->function);
         Serial.println("]");
         return HU_PROT_RECEIVE_UNKNOWN_FUNCTION;
@@ -136,7 +136,7 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     // Last checks
     if(packet->end!=HU_PROTOCOL_END_BYTE)
     {
-        Serial.print("receive packet error: incorrect packet end [");
+        Serial.print(F("receive packet error: incorrect packet end ["));
         Serial.print(packet->end);
         Serial.println("]");       
         return HU_PROT_RECEIVE_INCORRECT_END;
@@ -146,11 +146,11 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     uint8_t LRC = get_LRC(hu_protocol_buffer+offset, HU_PROTOCOL_START_LENGTH+packet->length); 
     if(LRC!=packet->LRC)
     {
-        Serial.print("receive packet error: Received LRC [");
+        Serial.print(F("receive packet error: Received LRC ["));
         Serial.print(LRC);
-        Serial.print("] but we calculated [");   
+        Serial.print(F("] but we calculated ["));   
         Serial.print(packet->LRC);
-        Serial.println("]");      
+        Serial.println(F("]"));      
         return HU_PROT_RECEIVE_INCORRECT_LRC;     
     }
 
@@ -159,39 +159,39 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
 
 void hu_protocol_print_packet( hu_packet_t* packet )
 {
-    Serial.println("----------[HU_Protocol packet]----------");
+    Serial.println(F("----------[HU_Protocol packet]----------"));
 
-    Serial.print("  Start byte: ");
+    Serial.print(F("  Start byte: "));
     Serial.println(packet->start);
 
-    Serial.print("  Length: ");
+    Serial.print(F("  Length: "));
     Serial.println(packet->length);
 
-    Serial.print("  Function: ");
+    Serial.print(F("  Function: "));
     Serial.println(packet->function);
 
-    Serial.print("  Source: ");
+    Serial.print(F("  Source: "));
     Serial.println(packet->source);
 
-    Serial.print("  Destination: ");
+    Serial.print(F("  Destination: "));
     Serial.println(packet->destination);
  
     int data_length = packet->length-HU_PROTOCOL_LENGTH_NON_DATA;
-    Serial.print("  Data: [");
+    Serial.print(F("  Data: ["));
     for(int i=0;i<data_length;i++)
     {
         Serial.print(packet->data[i]);
-        Serial.print(",");
+        Serial.print(F(","));
     }
-    Serial.println("]");
+    Serial.println(F("]"));
 
-    Serial.print("  end byte: ");
+    Serial.print(F("  end byte: "));
     Serial.println(packet->end);
 
-    Serial.print("  LRC: ");
+    Serial.print(F("  LRC: "));
     Serial.println(packet->LRC);
 
-    Serial.println("-----------------------------------------\n");
+    Serial.println(F("-----------------------------------------\n"));
   
 }
 
@@ -216,7 +216,7 @@ uint8_t hu_protocol_encode_address(const char* str) {
     else if (strncmp(str + 4, "GROEP6", 6) == 0) groupBits = 0b110;
     else if (strncmp(str + 4, "GROEP7", 6) == 0) groupBits = 0b111;
     else return 0;  // Invalid group
-
+    
     // Module
     if (strncmp(str + 10, "MM", 8) == 0) moduleBits = 0b000;
     else if (strncmp(str + 10, "CM", 8) == 0) moduleBits = 0b001;

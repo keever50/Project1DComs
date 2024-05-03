@@ -7,14 +7,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-// Standard memcpy replacement
-void cli_memcopy( char* dest, const char* src, int amount )
+uint8_t cli_line_buffer[CLI_MAX_WIDTH];
+void cli_memcopy( cli_terminal_t* term, int dest, int source, int len )
 {
-    for(int i=0;i<amount;i++)
-    {
-        dest[i]=src[i];
-    }
+    
+    cli_mem_reads(term, cli_line_buffer, source, len);
+    cli_mem_writes(term, cli_line_buffer, dest, len);
 }
 
 inline int cli_xy_to_addr( cli_terminal_t* term, uint16_t x, uint16_t y)
@@ -26,31 +24,43 @@ void cli_set( cli_terminal_t* term, uint16_t x, uint16_t y, char c )
 {
     uint16_t addr = cli_xy_to_addr(term, x, y);
     if(addr>=term->buffersize) return;
-    term->buffer[addr]=c;
-    term->colors[addr]=term->current_color;
+    cli_mem_write(term, addr, c);
+    cli_mem_write(term, addr+term->buffersize, term->current_color);
 }
 
 void cli_set_addr( cli_terminal_t* term, int addr, char c )
 {
     if(addr>=term->buffersize) return;
-    term->buffer[addr]=c;
-    term->colors[addr]=term->current_color;
+    cli_mem_write(term, addr, c);
+    cli_mem_write(term, addr+term->buffersize, term->current_color);
 }
 
 
 void cli_shift_up( cli_terminal_t* term )
 {
-    // For each line copy next line up. Except the first line
-    for(uint16_t addr=term->width ; addr<term->buffersize ; addr=addr+term->width)
+    uint16_t w = term->width;
+    uint16_t top = term->buffersize;
+
+    // Shift every line up
+    for(int addr=w; addr<top; addr=addr+w)
     {
-        cli_memcopy(term->buffer+(addr-term->width), term->buffer+addr, term->width);
-        cli_memcopy(term->colors+(addr-term->width), term->colors+addr, term->width);
+        int source = addr;
+        int dest = addr-w;
+        cli_memcopy(term, dest, source, w);
+        cli_memcopy(term, term->buffersize+dest, term->buffersize+source, w);        
     }
 
-    // Clean the new line appeared on the bottom
-    uint16_t top = term->buffersize-term->width;
-    memset(term->buffer+top, 0, term->width);
-    memset(term->colors+top, 0, term->width);
+    // Clear last line
+    memset(cli_line_buffer,0,sizeof(cli_line_buffer));
+    cli_mem_writes(term, cli_line_buffer, top-w, w);
+
+    // for(int line=1; line<term->height; line++)
+    // {
+    //     int source = line*term->width;
+    //     int dest = (line-1)*term->width;
+    //     cli_memcopy(term, dest, source, term->width);
+    //     cli_memcopy(term, term->buffersize+dest, term->buffersize+source, term->width);
+    // }    
 }
 
 unsigned char cli_get_next_argument_iterative(int* iterator, const char* str, char* arg, int max_arg_len, int* new_arg_len )
@@ -133,8 +143,8 @@ void cli_clear(cli_terminal_t* term)
     term->current_colunn=0;
     term->current_line=0;
     term->current_color=0b11111111;
-    memset(term->buffer, 0, term->buffersize);
-    memset(term->colors, 0, term->buffersize);
+    // memset(term->buffer, 0, term->buffersize);
+    // memset(term->colors, 0, term->buffersize);
 }
 
 unsigned char cli_execute( cli_terminal_t* term, const char* command, cli_executables_t* executables )
@@ -143,24 +153,43 @@ unsigned char cli_execute( cli_terminal_t* term, const char* command, cli_execut
     int amount = executables->number_of_executables;
 
     int iter=0, arglen=0;   
-    char* arg = (char*)malloc(maxarglen);
-    if(!arg)
-    {
-        cli_print(term,"NO_MEM\n");
-        cli_draw(term);   
-        return -1; 
-    }
+    //char* arg = (char*)malloc(maxarglen);
+    char arg[32];
+    memset(arg,0,sizeof(arg));
+    cli_print(term, command);
     cli_get_next_argument_iterative(&iter, command, arg, maxarglen, &arglen);   
     for(int i=0;i<amount;i++)
     {
         const char* name = executables->executable_names[i];
+        cli_print(term, name);
         if(!strcmp(name, arg))
         {
-            free(arg);
+            cli_print(term, "yes\n");
+            //free(arg);
             return executables->executable_functions[i](term, command);
         }
     }
 
-    free(arg);
+    //free(arg);
     return -1;
+}
+
+void cli_demo(cli_terminal_t* term)
+{
+    for(uint16_t y=0; y<term->height+5; y++)
+    {
+        term->current_color=0b11100111;
+        sprintf((char*)cli_line_buffer, "DEMO %d\n", y);
+        cli_print(term, (char*)cli_line_buffer);  
+        cli_draw(term);
+    }
+
+
+    cli_print(term, "BYE DEMO\n");
+    for(uint16_t y=0; y<term->height; y++)
+    {
+        cli_shift_up(term);  
+        cli_draw(term);
+    }
+
 }

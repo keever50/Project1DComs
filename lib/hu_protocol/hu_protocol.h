@@ -1,8 +1,12 @@
 
 
 #pragma once
-#include <Arduino.h>
+
+#ifdef TEST_MODULE
+#include <RH_ASK_mod.h>
+#else
 #include <RH_ASK.h>
+#endif
 
 // Written by Kevin Witteveen
 #define HU_PROTOCOL_START_BYTE      0x01 // Starting byte

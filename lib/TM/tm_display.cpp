@@ -12,15 +12,22 @@
 
 void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
 {
+    uint8_t buffer[CLI_MAX_WIDTH];
+    uint8_t cbuffer[CLI_MAX_WIDTH];
     static char ecode[32];
     //tft.clear();
     Serial.print("\e[H");
     for(uint16_t y=0; y<cli.height; y++)
     {
+        
+        // Get line
+        cli_mem_reads(&cli, buffer, y*cli.width, cli.width);
+        cli_mem_reads(&cli, cbuffer, cli.buffersize+(y*cli.width), cli.width);
+
         for(uint16_t x=0; x<cli.width; x++)
         {
-            int addr = y*cli.width+x;
-            char c = cli.buffer[addr];
+            int addr = x;
+            char c = buffer[addr];
             if(c==0)
             {
                 tft.fillRectangle(x*CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT, x*CLI_FONT_WIDTH+CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT+CLI_FONT_HEIGHT-1, COLOR_BLACK);
@@ -29,7 +36,7 @@ void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
             }
 
             // Get RRRGGBBB
-            uint8_t col = cli.colors[addr];
+            uint8_t col = cbuffer[addr];
             
             // Check if this is the same color as previous.
             static uint8_t prev_col=0;
@@ -62,7 +69,6 @@ void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
     }    
 }
 
-
 void tm_test_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
 {
     // R
@@ -77,6 +83,12 @@ void tm_test_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
     }   
     tm_draw_cli( tft, cli );
     wdt_reset();
+
+    for(int i=0;i<cli.height;i++)
+    {
+        cli_shift_up(&cli);
+        tm_draw_cli( tft, cli );
+    }
 
     // G
     for(uint16_t y=0; y<cli.height; y++)

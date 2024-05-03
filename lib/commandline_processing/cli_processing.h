@@ -13,12 +13,13 @@ extern "C" {
 #include <stdint.h>
 
 #define CLI_MAX_STR_LEN     64
+#define CLI_MAX_WIDTH   40
 
 typedef struct
 {
     uint16_t width;
     uint16_t height;
-    uint16_t buffersize;
+    uint16_t buffersize; // The size of a single buffer.
     char current_color;
     char* buffer;
     char* colors;
@@ -61,6 +62,16 @@ void cli_put(cli_terminal_t* term, char c);
 */
 void cli_clear(cli_terminal_t* term);
 
+/*
+    Weak functions for custom memory access. For example, an arduino has too little ram to render a big console. External RAM might be used.
+*/
+void cli_mem_write(cli_terminal_t* term, int address, uint8_t byte) __attribute__((weak));
+uint8_t cli_mem_read(cli_terminal_t* term, int address) __attribute__((weak));
+
+void cli_mem_writes(cli_terminal_t* term, uint8_t* source, int address, int len) __attribute__((weak));
+void cli_mem_reads(cli_terminal_t* term, uint8_t* destination, int address, int len) __attribute__((weak));
+
+void cli_demo(cli_terminal_t* term);
 
 /*
 This helper function can be repeated to find all the arguments in a string.
