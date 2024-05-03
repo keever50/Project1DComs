@@ -34,6 +34,8 @@ void pot();
 void storeReading(int value, int* readings, int* index);
 void printStats();
 
+void sensoren_verwerken();
+
 void res();
 void zend(uint8_t);
 
@@ -65,7 +67,7 @@ void zend(uint8_t source_van_aanvrager)
   packet.destination = source_van_aanvrager;
   packet.source = 0//
 
-//data
+//data   // mijn functie in de header
 
 
   hu_protocol_transmit( &rh_ask, &packet );
@@ -91,6 +93,17 @@ void res(void)
     //zend ...FC06(HU_PROTOCOL_FUNTION_OVERDRAGEN_MEETWAARDES)
     
     
+  }
+}
+
+void sensoren_verwerken()
+{
+  for (int i = 0; i < numReadings; i++) {
+  Temp();
+  light();
+  pot();
+  printStats(); // Print statistics after collecting 10 readings  //voor mij
+  delay(1000); // Delay before taking the next set of readings
   }
 }
 

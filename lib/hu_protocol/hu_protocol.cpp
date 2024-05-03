@@ -229,6 +229,7 @@ uint8_t hu_protocol_encode_address(const char* str) {
     
 }
 
+// Written by Hayan Rafee
 void hu_protocol_MM_structToByteArray(const hu_protocol_SensorReadings &readings, byte* byteArray) 
 {
   byte* ptr = (byte*)&readings;               // Convert float values to byte arrays
@@ -239,13 +240,13 @@ void hu_protocol_MM_structToByteArray(const hu_protocol_SensorReadings &readings
   Serial.println("Array of bytes:"); // Print the array of bytes
   for (uint8_t i = 0; i < sizeof(hu_protocol_SensorReadings); i++) 
   {
-    Serial.println(byteArray[i], BIN);
+    Serial.println(byteArray[i], BIN);//binair
   }
   Serial.println();
   Serial.println();
 }
 
-void hu_protocol_MM_checkByteArray(byte* byteArray) {     //check function of het omzetten goed is gegaan(wordt niet gebruikt)
+void hu_protocol_MM_checkByteArray(byte* byteArray) {     //check function of het omzetten goed is gegaan
   // Retrieve the bytes from the byteArray    // de bytes array is pakket - (SoS + sours + dest + PL + LRC + FC)      
   hu_protocol_SensorReadings readings;
   byte* ptr = (byte*)&readings;
@@ -272,4 +273,4 @@ void hu_protocol_MM_checkByteArray(byte* byteArray) {     //check function of he
   Serial.println(readings.minPot);
   Serial.print("Avg Pot: ");
   Serial.println(readings.avgPot);
-}
+}  //check of je de exact values krijgt met 4 signifcante cijfers
