@@ -13,7 +13,7 @@ LiquidCrystal_I2C lcd(0x027, 16, 2);
 void route(char i);
 char kaartbepaler();
 
-char buttonstate;
+char buttonstate = 0;
 
 void setup(void)
 {
