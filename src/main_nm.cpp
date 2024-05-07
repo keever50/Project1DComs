@@ -1,3 +1,4 @@
+#ifdef NAVIGATIE_TEST
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_PN532.h>
@@ -370,3 +371,5 @@ void route(char i)
     lcd.print("SYSTEEMFOUT!");
   }
 }
+#endif
+
