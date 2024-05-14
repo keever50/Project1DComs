@@ -104,7 +104,10 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
 
     // Check whether the destination is us. Otherwise ignore this packet.
     // OUR ADDRESS FUNCTION HERE
-
+    if(packet->destination!=hu_protocol_address)
+    {
+        return HU_PROT_RECEIVE_IGNORE;
+    }
 
     // Do some checks before getting the data
     // Length is too long
