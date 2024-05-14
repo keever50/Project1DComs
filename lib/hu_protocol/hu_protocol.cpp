@@ -217,28 +217,28 @@ uint8_t hu_protocol_encode_address(const char* str) {
     uint8_t classBits, groupBits, moduleBits;
 
     // Class
-    if (strncmp(str, "2A", 4) == 0) classBits = 0b00;
-    else if (strncmp(str, "2B", 4) == 0) classBits = 0b01;
-    else if (strncmp(str, "2C", 4) == 0) classBits = 0b10;
-    else if (strncmp(str, "2D", 4) == 0) classBits = 0b11;
+    if (strncmp(str, "2A", 2) == 0) classBits = 0b00;
+    else if (strncmp(str, "2B", 2) == 0) classBits = 0b01;
+    else if (strncmp(str, "2C", 2) == 0) classBits = 0b10;
+    else if (strncmp(str, "2D", 2) == 0) classBits = 0b11;
     else return 0;  // Invalid class
 
     // Group
-    if (strncmp(str + 4, "G1", 6) == 0) groupBits = 0b001;
-    else if (strncmp(str + 4, "G2", 6) == 0) groupBits = 0b010;
-    else if (strncmp(str + 4, "G3", 6) == 0) groupBits = 0b011;
-    else if (strncmp(str + 4, "G4", 6) == 0) groupBits = 0b100;
-    else if (strncmp(str + 4, "G5", 6) == 0) groupBits = 0b101;
-    else if (strncmp(str + 4, "G6", 6) == 0) groupBits = 0b110;
-    else if (strncmp(str + 4, "G7", 6) == 0) groupBits = 0b111;
+    if (strncmp(str + 2, "G1", 2) == 0) groupBits = 0b001;
+    else if (strncmp(str + 2, "G2", 2) == 0) groupBits = 0b010;
+    else if (strncmp(str + 2, "G3", 2) == 0) groupBits = 0b011;
+    else if (strncmp(str + 2, "G4", 2) == 0) groupBits = 0b100;
+    else if (strncmp(str + 2, "G5", 2) == 0) groupBits = 0b101;
+    else if (strncmp(str + 2, "G6", 2) == 0) groupBits = 0b110;
+    else if (strncmp(str + 2, "G7", 2) == 0) groupBits = 0b111;
     else return 0;  // Invalid group
     
     // Module
-    if (strncmp(str + 10, "MM", 8) == 0) moduleBits = 0b000;
-    else if (strncmp(str + 10, "CM", 8) == 0) moduleBits = 0b001;
-    else if (strncmp(str + 10, "NM", 8) == 0) moduleBits = 0b010;
-    else if (strncmp(str + 10, "CO", 8) == 0) moduleBits = 0b011;
-    else if (strncmp(str + 10, "TM", 8) == 0) moduleBits = 0b100;
+    if (strncmp(str + 4, "MM", 2) == 0) moduleBits = 0b000;
+    else if (strncmp(str + 4, "CM", 2) == 0) moduleBits = 0b001;
+    else if (strncmp(str + 4, "NM", 2) == 0) moduleBits = 0b010;
+    else if (strncmp(str + 4, "CO", 2) == 0) moduleBits = 0b011;
+    else if (strncmp(str + 4, "TM", 2) == 0) moduleBits = 0b100;
     else return 0;  // Invalid module
 
     return classBits | (groupBits << 2) | (moduleBits << 5);

@@ -61,20 +61,20 @@ int rf_debug_send_packet(cli_terminal_t* term, const char* full_command)
 {
     const uint8_t maxarglen=32;
     int iter=0, arglen=0;
-    char* arg = tm_rf_debug_linebuffer;
+    char buff[32];
+    memset(buff, 0, sizeof(buff));
+    cli_get_next_argument_iterative(&iter, full_command, buff, maxarglen, &arglen);
+    cli_get_next_argument_iterative(&iter, full_command, buff, maxarglen, &arglen);   
 
-    cli_get_next_argument_iterative(&iter, full_command, arg, maxarglen, &arglen);
-    cli_get_next_argument_iterative(&iter, full_command, arg, maxarglen, &arglen);   
+    tm_rf_debug_packet.destination=hu_protocol_encode_address(buff);
 
-    tm_rf_debug_packet.destination=hu_protocol_encode_address(arg);
-
-    cli_print(term, "...");
+    Serial.print(hu_protocol_encode_address(buff));
+    cli_print(term, buff);
     cli_draw(term);
     hu_protocol_transmit(&rh_ask, &tm_rf_debug_packet);
     cli_print(term, tm_str_ok);
     cli_draw(term);
     
-    free(arg);
     return 0;
 }
 
