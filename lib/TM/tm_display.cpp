@@ -16,7 +16,7 @@ void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
     uint8_t cbuffer[CLI_MAX_WIDTH];
     static char ecode[32];
     //tft.clear();
-    Serial.print("\e[H");
+    //Serial.print("\e[H");
     for(uint16_t y=0; y<cli.height; y++)
     {
         
@@ -31,7 +31,7 @@ void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
             if(c==0)
             {
                 tft.fillRectangle(x*CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT, x*CLI_FONT_WIDTH+CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT+CLI_FONT_HEIGHT-1, COLOR_BLACK);
-                Serial.print(" ");
+                //Serial.print(" ");
                 continue;
             }
 
@@ -52,7 +52,7 @@ void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
                 // escape code for serial
                 snprintf(ecode, sizeof(ecode), "\e[38;2;%d;%d;%dm",R*36,G*85,B*36);
                 ecode[31]=0;
-                Serial.print(ecode);
+                //Serial.print(ecode);
                 
                 // Convert to 16 bit
                 RGB = tft.setColor(R*36,G*85,B*36);
@@ -62,9 +62,9 @@ void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
             tft.setBackgroundColor(COLOR_DARKBLUE);
             tft.drawChar(x*CLI_FONT_WIDTH,y*CLI_FONT_HEIGHT,c,RGB);
 
-            Serial.print(c);
+            //Serial.print(c);
         }  
-        Serial.println("");
+        //Serial.println("");
         wdt_reset();
     }    
 }

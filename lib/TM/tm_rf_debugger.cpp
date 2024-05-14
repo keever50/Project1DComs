@@ -30,6 +30,14 @@ static const char* tm_rf_debug_names[TM_RF_DEBUG_EXECS]=
 };
 //
 
+void printout(cli_terminal_t* cli, char* str)
+{
+    Serial.print(str);
+    cli_print(cli, str);
+    //cli_draw(cli);
+
+}
+
 int rf_debug_ident(cli_terminal_t* term, const char* full_command)
 {
     const uint8_t maxarglen=32;
@@ -130,7 +138,7 @@ void rf_debug_receive(cli_terminal_t* term)
         if(start==HU_PROTOCOL_START_BYTE) term->current_color=TM_GREEN;
         else term->current_color=TM_RED;
         sprintf(sprint_buf, "(S%X-", start);
-        cli_print(term, sprint_buf);
+        printout(term, sprint_buf);
 
         // Check length byte
         uint8_t length = tm_rf_debug_packet_buffer[i++];
@@ -141,32 +149,32 @@ void rf_debug_receive(cli_terminal_t* term)
             data_len = 0;
         };
         sprintf(sprint_buf, "L%X-", length);
-        cli_print(term, sprint_buf);
+        printout(term, sprint_buf);
 
         // Check function byte
         uint8_t function = tm_rf_debug_packet_buffer[i++];
         if(function<=HU_PROTOCOL_FUNCTION_RANGE) term->current_color=TM_GREEN;
         else term->current_color=TM_RED;
         sprintf(sprint_buf, "F%X-", function);
-        cli_print(term, sprint_buf);
+        printout(term, sprint_buf);
 
         // Check source byte
         uint8_t source = tm_rf_debug_packet_buffer[i++];
         if(source!=0) term->current_color=TM_GREEN;
         else term->current_color=TM_RED;
         sprintf(sprint_buf, "s%X-", source);
-        cli_print(term, sprint_buf);
+        printout(term, sprint_buf);
 
         // Check destination byte
         uint8_t destination = tm_rf_debug_packet_buffer[i++];
         if(destination == tm_rf_debug_source) term->current_color=TM_GREEN;
         else if(destination != tm_rf_debug_source) term->current_color=0b11111000;
         sprintf(sprint_buf, "d%X", destination);
-        cli_print(term, sprint_buf);
+        printout(term, sprint_buf);
 
         // Get data
         term->current_color=TM_WHITE;
-        cli_put(term, '[');
+        printout(term, "[");
         for(int B=0;B<data_len;B++)
         {
             uint8_t byte = tm_rf_debug_packet_buffer[i++];
@@ -174,16 +182,16 @@ void rf_debug_receive(cli_terminal_t* term)
             cli_print(term, sprint_buf);
 
             if(B==data_len-1) break;
-            cli_put(term, '-');
+            printout(term, "-");
         }
-        cli_put(term, ']');
+        printout(term, "]");
 
         // End of trans
         uint8_t end = tm_rf_debug_packet_buffer[i++];
         if(end==HU_PROTOCOL_END_BYTE) term->current_color=TM_GREEN;
         else term->current_color=TM_RED;
         sprintf(sprint_buf, "E%X-", end);
-        cli_print(term, sprint_buf);
+        printout(term, sprint_buf);
 
         // LRC
         uint8_t LRC = tm_rf_debug_packet_buffer[i++];
@@ -191,14 +199,18 @@ void rf_debug_receive(cli_terminal_t* term)
         if(LRC==our_LRC) term->current_color=TM_GREEN;
         else term->current_color=TM_RED;
         sprintf(sprint_buf, "X%X)", LRC);
-        cli_print(term, sprint_buf);
+        printout(term, sprint_buf);
 
         // Finish
-        cli_print(term, "\n");
+        printout(term, "\n");
         cli_draw(term);
         memset(tm_rf_debug_packet_buffer, 0, HU_PROTOCOL_BUFFER_SIZE);
         term->current_color=TM_WHITE;
+
+        Serial.print('\n');
     }
+
+    
 
 }
 
