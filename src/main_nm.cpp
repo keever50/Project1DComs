@@ -19,7 +19,6 @@ char buttonstate = 0;
 void setup(void)
 {
   Serial.begin(115200);
-  Serial.println("Welkom!");
   pinMode(Button_pin, INPUT);
   nfc.begin();
   lcd.init();
@@ -29,7 +28,10 @@ void setup(void)
     Serial.print("Geen bord gedetecteerd!");
     while (1);
   }
-  Serial.println("Wachten op kaart ...");
+  lcd.setCursor(0,0);
+  lcd.print("Scan een");
+  lcd.setCursor(0, 1);
+  lcd.print("kaart:");
 }
 void loop(void)
 {
@@ -73,7 +75,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
 
   if (UID)
   {
-    Serial.println("kaart gescand!");
+    lcd.clear();
     Serial.println("De gevonde UID is:");
 
     for (uint8_t j=0; j<UIDLengte; j++)
@@ -288,11 +290,23 @@ void route(char i)
   switch (i)
   {
     case 0:
+    while (digitalRead(Button_pin) == LOW)
+    {
     lcd.setCursor(0,0);
     lcd.print("ERROR:");
     lcd.setCursor(0,1);
     lcd.print("onbekende kaart");
-    break;
+    if ((digitalRead(Button_pin) == HIGH) && (buttonstate == 0))
+    {
+      lcd.clear();
+      buttonstate ++;
+    }
+     if ((digitalRead(Button_pin) == HIGH) && (buttonstate == 1))
+     {
+      lcd.setCursor(0,0);
+      lcd.print("Volgende stap");
+     }
+    }
     
     case 1:
     break;
