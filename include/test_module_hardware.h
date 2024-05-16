@@ -24,11 +24,11 @@
 #define TFT_BRIGHTNESS 200 // Initial brightness of TFT backlight
 
 /****************
-    SD Card
+    RAM
 ****************/
-#define SD_CS  6 
-#define SD_MOSI 11 
-#define SD_MISO 12
-#define SD_CLK 13
-#define SD_SPEED 1000000
+#define RAM_CS  6 
+#define RAM_MOSI 11 
+#define RAM_MISO 12
+#define RAM_CLK 13
+#define RAM_SPEED 1000000
 #endif
