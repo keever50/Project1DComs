@@ -1,9 +1,21 @@
 #include <hu_protocol.h>
 #include <biterrors.h>
 
+uint8_t hu_protocol_address=0;
+
 uint8_t hu_protocol_buffer[HU_PROTOCOL_BUFFER_SIZE];
 char hu_protocol_tag_receive[]="PROTOCOL RECEIVE";
 
+void hu_protocol_set_address( uint8_t addr )
+{
+    hu_protocol_address=addr;    
+}
+
+
+uint8_t hu_protocol_get_address()
+{
+    return hu_protocol_address;
+}
 
 // Written by Marijn Boumans & Kevin Witteveen
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet)
@@ -92,6 +104,10 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
 
     // Check whether the destination is us. Otherwise ignore this packet.
     // OUR ADDRESS FUNCTION HERE
+    if(packet->destination!=hu_protocol_address)
+    {
+        return HU_PROT_RECEIVE_IGNORE;
+    }
 
     // Do some checks before getting the data
     // Length is too long
@@ -201,28 +217,28 @@ uint8_t hu_protocol_encode_address(const char* str) {
     uint8_t classBits, groupBits, moduleBits;
 
     // Class
-    if (strncmp(str, "EV2A", 4) == 0) classBits = 0b00;
-    else if (strncmp(str, "EV2B", 4) == 0) classBits = 0b01;
-    else if (strncmp(str, "EV2C", 4) == 0) classBits = 0b10;
-    else if (strncmp(str, "EV2D", 4) == 0) classBits = 0b11;
+    if (strncmp(str, "2A", 2) == 0) classBits = 0b00;
+    else if (strncmp(str, "2B", 2) == 0) classBits = 0b01;
+    else if (strncmp(str, "2C", 2) == 0) classBits = 0b10;
+    else if (strncmp(str, "2D", 2) == 0) classBits = 0b11;
     else return 0;  // Invalid class
 
     // Group
-    if (strncmp(str + 4, "GROEP1", 6) == 0) groupBits = 0b001;
-    else if (strncmp(str + 4, "GROEP2", 6) == 0) groupBits = 0b010;
-    else if (strncmp(str + 4, "GROEP3", 6) == 0) groupBits = 0b011;
-    else if (strncmp(str + 4, "GROEP4", 6) == 0) groupBits = 0b100;
-    else if (strncmp(str + 4, "GROEP5", 6) == 0) groupBits = 0b101;
-    else if (strncmp(str + 4, "GROEP6", 6) == 0) groupBits = 0b110;
-    else if (strncmp(str + 4, "GROEP7", 6) == 0) groupBits = 0b111;
+    if (strncmp(str + 2, "G1", 2) == 0) groupBits = 0b001;
+    else if (strncmp(str + 2, "G2", 2) == 0) groupBits = 0b010;
+    else if (strncmp(str + 2, "G3", 2) == 0) groupBits = 0b011;
+    else if (strncmp(str + 2, "G4", 2) == 0) groupBits = 0b100;
+    else if (strncmp(str + 2, "G5", 2) == 0) groupBits = 0b101;
+    else if (strncmp(str + 2, "G6", 2) == 0) groupBits = 0b110;
+    else if (strncmp(str + 2, "G7", 2) == 0) groupBits = 0b111;
     else return 0;  // Invalid group
     
     // Module
-    if (strncmp(str + 10, "MM", 8) == 0) moduleBits = 0b000;
-    else if (strncmp(str + 10, "CM", 8) == 0) moduleBits = 0b001;
-    else if (strncmp(str + 10, "NM", 8) == 0) moduleBits = 0b010;
-    else if (strncmp(str + 10, "CO", 8) == 0) moduleBits = 0b011;
-    else if (strncmp(str + 10, "TM", 8) == 0) moduleBits = 0b100;
+    if (strncmp(str + 4, "MM", 2) == 0) moduleBits = 0b000;
+    else if (strncmp(str + 4, "CM", 2) == 0) moduleBits = 0b001;
+    else if (strncmp(str + 4, "NM", 2) == 0) moduleBits = 0b010;
+    else if (strncmp(str + 4, "CO", 2) == 0) moduleBits = 0b011;
+    else if (strncmp(str + 4, "TM", 2) == 0) moduleBits = 0b100;
     else return 0;  // Invalid module
 
     return classBits | (groupBits << 2) | (moduleBits << 5);

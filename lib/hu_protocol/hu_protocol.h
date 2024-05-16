@@ -79,6 +79,10 @@ int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet);
 // Prints the packet
 void hu_protocol_print_packet( hu_packet_t* packet );
 
+// Sets the global address
+void hu_protocol_set_address( uint8_t addr );
+// Gets the global address
+uint8_t hu_protocol_get_address();
 
 // Written by Marijn Boumans
 uint8_t hu_protocol_encode_address(const char* str);
