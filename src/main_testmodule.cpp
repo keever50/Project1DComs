@@ -12,6 +12,7 @@
 #include <tm_rf_debugger.h>
 //#include <SdFat.h>
 #include <RH_ASK_mod.h>
+#include <ExtRAM.h>
 
 // TFT
 #include "TFT_22_ILI9225.h"
@@ -113,7 +114,6 @@ void command( const char* cmd )
 }
 
 // Console graphical RAM
-uint8_t CRAM[CLI_HEIGHT*CLI_WIDTH*2+CLI_WIDTH];
 // SdFat SD;
 // File CRAM_file;
 // void init_sd_cram(cli_terminal_t *term)
@@ -145,55 +145,53 @@ uint8_t CRAM[CLI_HEIGHT*CLI_WIDTH*2+CLI_WIDTH];
 
 void cli_mem_write(cli_terminal_t* term, int address, uint8_t byte)
 {
-  // wdt_reset();
-  // static int prev_addr;
-  // if(address!=prev_addr+1)
-  // {
-  //   CRAM_file.seek(address);
-  // }
 
-  // prev_addr=address;
-  // CRAM_file.write(byte);
-  CRAM[address]=byte;
+  //CRAM[address]=byte;
+  extram.write_byte(address, byte);
+
 }
 uint8_t cli_mem_read(cli_terminal_t* term, int address)
 {
-  // wdt_reset();
-  // static int prev_addr;
-  // if(address!=prev_addr+1)
-  // {
-  //   CRAM_file.seek(address);  
-  // }  
 
-  // prev_addr=address;
-  // return CRAM_file.read();
-  return CRAM[address];
+  //return CRAM[address];
+  return extram.read_byte(address);
+
 }
 void cli_mem_writes(cli_terminal_t* term, uint8_t* source, int address, int len)
 {
-  // wdt_reset();
-  // CRAM_file.seek(address);  
-  // CRAM_file.write(source, len);
-  for(int i=0;i<len;i++)
-  {
-    CRAM[address+i]=source[i];
-  }
+
+  extram.write_bytes(address, source, len);
+
+  // for(int i=0;i<len;i++)
+  // {
+  //   CRAM[address+i]=source[i];
+  // }
 }
 void cli_mem_reads(cli_terminal_t* term, uint8_t* destination, int address, int len)
 {
-  // wdt_reset();
-  // CRAM_file.seek(address);  
-  // CRAM_file.read(destination, len);
-  for(int i=0;i<len;i++)
-  {
-    destination[i]=CRAM[address+i];
-  }  
+
+  extram.read_bytes(address, destination, len);
+
+  // for(int i=0;i<len;i++)
+  // {
+  //   destination[i]=CRAM[address+i];
+  // }  
 }
 
 
 // Setup
 void setup() 
 {
+  SPI.begin();
+  pinMode(RAM_CS, OUTPUT);
+  extram.set_mode(EXTRAM_MODE_SEQ);
+  
+  // Clean
+  for(uint16_t i=0;i<65535;i++)
+  {
+    extram.write_byte(i, 0);
+  }
+
   // Enable watchdog
   wdt_disable();
   delay(3000);

@@ -6,7 +6,7 @@
      RADIO
 ****************/
 // Pins
-#define RA_BITRATE          500
+#define RA_BITRATE          1000
 #define RA_RX               3
 #define RA_TX               5
 #define RA_TR               2
@@ -30,5 +30,5 @@
 #define RAM_MOSI 11 
 #define RAM_MISO 12
 #define RAM_CLK 13
-#define RAM_SPEED 1000000
+#define RAM_SPEED 8000000
 #endif
