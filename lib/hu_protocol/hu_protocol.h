@@ -3,7 +3,7 @@
 #pragma once
 
 #ifdef TEST_MODULE
-#include <RH_ASK_mod.h>
+#include <RH_ASK.h>
 #else
 #include <RH_ASK.h>
 #endif

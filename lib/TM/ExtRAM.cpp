@@ -1,3 +1,8 @@
+/*
+    External RAM 23A512/23LC512 driver
+    Written by Kevin Witteveen
+*/
+
 #ifdef TEST_MODULE
 
 #include <ExtRAM.h>

@@ -8,66 +8,122 @@
 #include <avr/wdt.h>
 #include <Wire.h>
 #include <Arduino.h>
+#include <test_module_hardware.h>
+#include <ExtRAM.h>
 
+uint16_t colors[]=
+{
+  COLOR_RED,
+  COLOR_GREEN,
+  COLOR_BLUE
+};
 
 void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
 {
-    uint8_t buffer[CLI_MAX_WIDTH];
-    uint8_t cbuffer[CLI_MAX_WIDTH];
-    static char ecode[32];
-    //tft.clear();
-    //Serial.print("\e[H");
-    for(uint16_t y=0; y<cli.height; y++)
+    uint8_t buffer[CLI_WIDTH];
+    uint8_t color_buffer[CLI_WIDTH];
+    uint8_t persistance_buffer[CLI_WIDTH];
+    //uint8_t persistance_buffer_color[CLI_WIDTH];
+    for(uint16_t y=0;y<CLI_HEIGHT;y++)
     {
-        
-        // Get line
-        cli_mem_reads(&cli, buffer, y*cli.width, cli.width);
-        cli_mem_reads(&cli, cbuffer, cli.buffersize+(y*cli.width), cli.width);
+        // Get bytes
+        extram.read_bytes(RAM_SECT_GRAPHICS_START+y*CLI_WIDTH, buffer, sizeof(buffer));
+        extram.read_bytes(RAM_SECT_GRAPHICS_START+CLI_SIZE+y*CLI_WIDTH, color_buffer, sizeof(color_buffer));
 
-        for(uint16_t x=0; x<cli.width; x++)
+        extram.read_bytes(RAM_SECT_PERSISTANCE_START+y*CLI_WIDTH, persistance_buffer, sizeof(persistance_buffer));
+        //extram.read_bytes(RAM_SECT_PERSISTANCE_START+CLI_SIZE+y*CLI_WIDTH, persistance_buffer_color, sizeof(persistance_buffer_color));
+
+        for(uint16_t x=0;x<CLI_WIDTH;x++)
         {
-            int addr = x;
-            char c = buffer[addr];
-            if(c==0)
-            {
-                tft.fillRectangle(x*CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT, x*CLI_FONT_WIDTH+CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT+CLI_FONT_HEIGHT-1, COLOR_BLACK);
-                //Serial.print(" ");
-                continue;
-            }
+            // Optimize font width calculation
+            char c = buffer[x];
+            char c_old = persistance_buffer[x];
 
-            // Get RRRGGBBB
-            uint8_t col = cbuffer[addr];
-            
-            // Check if this is the same color as previous.
-            static uint8_t prev_col=0;
-            static uint16_t RGB=0;
-            if(col!=prev_col)
-            {
-                uint8_t B = col&0b00000111;
-                col=col>>3;
-                uint8_t G = col&0b00000011;
-                col=col>>2;
-                uint8_t R = col&0b00000111;
+            // Replace unknown characters
+            if(c>='' || c<=0) c='?';
 
-                // escape code for serial
-                snprintf(ecode, sizeof(ecode), "\e[38;2;%d;%d;%dm",R*36,G*85,B*36);
-                ecode[31]=0;
-                //Serial.print(ecode);
+            // Calculate colors from 8bit to RRRGGBBB to 16-bit
+            uint8_t color=color_buffer[x];
+            uint8_t R = (color>>5)&0b111;
+            uint8_t G = (color>>3)&0b11;
+            uint8_t B = color&0b111;
+            uint16_t calculated_color = tft.setColor(R*36,G*85,B*36);
+
+            // Do not redraw unchanged characters
+            if(c!=c_old)
+            {
+                //tft.setBackgroundColor(COLOR_BLUE);
+                if(c==' ')
+                {
+                    tft.fillRectangle(x*CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT, x*CLI_FONT_WIDTH+CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT+CLI_FONT_HEIGHT, COLOR_BLACK);
+                }else{
+                    tft.drawChar(x*CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT, c, calculated_color);
+                }
                 
-                // Convert to 16 bit
-                RGB = tft.setColor(R*36,G*85,B*36);
-
-                prev_col=col;
+                persistance_buffer[x]=c;
             }
-            tft.setBackgroundColor(COLOR_DARKBLUE);
-            tft.drawChar(x*CLI_FONT_WIDTH,y*CLI_FONT_HEIGHT,c,RGB);
+            
+        }
 
-            //Serial.print(c);
-        }  
-        //Serial.println("");
-        wdt_reset();
-    }    
+        // Update buffer
+        extram.write_bytes(RAM_SECT_PERSISTANCE_START+y*CLI_WIDTH, persistance_buffer, sizeof(persistance_buffer));
+        //extram.write_bytes(RAM_SECT_PERSISTANCE_START+CLI_SIZE+y*CLI_WIDTH, persistance_buffer_color, sizeof(persistance_buffer_color));        
+    }
 }
+
+// void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
+// {
+//     uint8_t buffer[CLI_MAX_WIDTH];
+//     uint8_t cbuffer[CLI_MAX_WIDTH];
+//     //tft.clear();
+//     //Serial.print("\e[H");
+//     for(uint16_t y=0; y<cli.height; y++)
+//     {
+        
+//         // Get line
+//         cli_mem_reads(&cli, buffer, y*cli.width, cli.width);
+//         cli_mem_reads(&cli, cbuffer, cli.buffersize+(y*cli.width), cli.width);
+
+//         for(uint16_t x=0; x<cli.width; x++)
+//         {
+//             int addr = x;
+//             char c = buffer[addr];
+//             if(c==0)
+//             {
+//                 tft.fillRectangle(x*CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT, x*CLI_FONT_WIDTH+CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT+CLI_FONT_HEIGHT-1, COLOR_BLACK);
+//                 //Serial.print(" ");
+//                 continue;
+//             }
+
+//             // Get RRRGGBBB
+//             uint8_t col = cbuffer[addr];
+            
+//             // Check if this is the same color as previous.
+//             static uint8_t prev_col=0;
+//             static uint16_t RGB=0;
+//             if(col!=prev_col)
+//             {
+//                 uint8_t B = col&0b00000111;
+//                 col=col>>3;
+//                 uint8_t G = col&0b00000011;
+//                 col=col>>2;
+//                 uint8_t R = col&0b00000111;
+
+                
+//                 // Convert to 16 bit
+//                 RGB = tft.setColor(R*36,G*85,B*36);
+
+//                 prev_col=col;
+//             }
+//             tft.setBackgroundColor(COLOR_DARKBLUE);
+//             tft.drawChar(x*CLI_FONT_WIDTH,y*CLI_FONT_HEIGHT,c,RGB);
+
+//             //Serial.print(c);
+//         }  
+//         //Serial.println("");
+//         wdt_reset();
+//     }    
+// }
 
 void tm_test_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
 {

@@ -51,7 +51,7 @@ void cli_shift_up( cli_terminal_t* term )
     }
 
     // Clear last line
-    memset(cli_line_buffer,0,sizeof(cli_line_buffer));
+    memset(cli_line_buffer,' ',sizeof(cli_line_buffer));
     cli_mem_writes(term, cli_line_buffer, top-w, w);
 
     // for(int line=1; line<term->height; line++)
