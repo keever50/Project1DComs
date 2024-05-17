@@ -114,8 +114,8 @@ void Tm_io::set_color( uint8_t raw )
 char Tm_io::get_char( bool blocking )
 {
   char c=0;
-  while(blocking)
-  {
+  
+  do{
     tm_sys.yield();
 
     // Get key from keyboard
@@ -128,7 +128,7 @@ char Tm_io::get_char( bool blocking )
 
     // Return char when not null
     if(c!='\0') return c;
-  }
+  }while(blocking);
 
   // When non blocking, return char as is.
   return c;

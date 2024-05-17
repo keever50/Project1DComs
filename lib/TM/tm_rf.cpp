@@ -11,10 +11,10 @@ int Tm_rf::init()
     return 0;
 }
 
-int Tm_rf::receive_raw( bool blocking, hu_packet_t* packet )
+int Tm_rf::receive_raw_packet( bool blocking, hu_packet_t* packet )
 {
     uint8_t len = sizeof(temp_buffer);
-    for(;;)
+    do
     {
         tm_sys.yield();
 
@@ -25,8 +25,17 @@ int Tm_rf::receive_raw( bool blocking, hu_packet_t* packet )
             
             return 1;
         }
-    }
+    }while(blocking);
+    
     return 0;
+}
+
+int Tm_rf::transmit_raw( uint8_t* raw, uint8_t len, bool blocking )
+{
+    bool success = rh_ask.send( raw, len );
+    
+    if(blocking) rh_ask.waitPacketSent(1000);
+    return success;
 }
 
 Tm_rf tm_rf;

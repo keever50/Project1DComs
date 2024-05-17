@@ -1,6 +1,31 @@
 #ifdef TEST_MODULE
 
 #include <tm_debug.h>
+#include <execs.h>
+
+int tm_exec_scrambler_open( String full_command )
+{
+    String arg = execs_get_arg( full_command, 1); 
+    uint8_t scramblesize = arg.toInt();
+    if(scramblesize==0) return 1;
+
+    uint8_t* scrambles = (uint8_t*)malloc(scramblesize);
+
+    tm_io.print(F("Transmitting ")); 
+    tm_io.print(String(scramblesize)+" random bytes\n");  
+
+    for(uint8_t i=0;i<scramblesize;i++)
+    {
+        scrambles[i]=(uint8_t)rand();
+    }        
+    bool success = tm_rf.transmit_raw(scrambles, scramblesize, true);
+
+    free(scrambles);
+    
+
+
+    return !success;
+}
 
 void tm_prog_receiver_print_packet( hu_packet_t& packet )
 {
@@ -55,7 +80,10 @@ int tm_exec_receiver_open( String full_command )
     hu_packet_t packet;
     for(;;)
     {
-        int rec = tm_rf.receive_raw(false, &packet);
+        // Break when any key is pressed
+        if(tm_io.get_char(false)!='\0') break;
+
+        int rec = tm_rf.receive_raw_packet(false, &packet);
         if(rec)
         {
             tm_prog_receiver_print_packet(packet);

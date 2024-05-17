@@ -21,6 +21,7 @@ execs_function_t mainexecs[]=
 {
     {"test", Etest},
     {"rec", tm_exec_receiver_open},
+    {"scram", tm_exec_scrambler_open},
     {"", NULL} // Terminator
 };
 
