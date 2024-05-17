@@ -23,7 +23,7 @@ void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
     uint8_t buffer[CLI_WIDTH];
     uint8_t color_buffer[CLI_WIDTH];
     uint8_t persistance_buffer[CLI_WIDTH];
-    //uint8_t persistance_buffer_color[CLI_WIDTH];
+    uint8_t persistance_buffer_color[CLI_WIDTH];
     for(uint16_t y=0;y<CLI_HEIGHT;y++)
     {
         // Get bytes
@@ -31,14 +31,14 @@ void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
         extram.read_bytes(RAM_SECT_GRAPHICS_START+CLI_SIZE+y*CLI_WIDTH, color_buffer, sizeof(color_buffer));
 
         extram.read_bytes(RAM_SECT_PERSISTANCE_START+y*CLI_WIDTH, persistance_buffer, sizeof(persistance_buffer));
-        //extram.read_bytes(RAM_SECT_PERSISTANCE_START+CLI_SIZE+y*CLI_WIDTH, persistance_buffer_color, sizeof(persistance_buffer_color));
+        extram.read_bytes(RAM_SECT_PERSISTANCE_START+CLI_SIZE+y*CLI_WIDTH, persistance_buffer_color, sizeof(persistance_buffer_color));
 
         for(uint16_t x=0;x<CLI_WIDTH;x++)
         {
             // Optimize font width calculation
             char c = buffer[x];
             char c_old = persistance_buffer[x];
-
+            uint8_t color_old = persistance_buffer_color[x];
             // Replace unknown characters
             if(c>='' || c<=0) c='?';
 
@@ -50,7 +50,7 @@ void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
             uint16_t calculated_color = tft.setColor(R*36,G*85,B*36);
 
             // Do not redraw unchanged characters
-            if(c!=c_old)
+            if(c!=c_old || color!=color_old)
             {
                 //tft.setBackgroundColor(COLOR_BLUE);
                 if(c==' ')
@@ -61,13 +61,14 @@ void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
                 }
                 
                 persistance_buffer[x]=c;
+                persistance_buffer_color[x]=color;
             }
             
         }
 
         // Update buffer
         extram.write_bytes(RAM_SECT_PERSISTANCE_START+y*CLI_WIDTH, persistance_buffer, sizeof(persistance_buffer));
-        //extram.write_bytes(RAM_SECT_PERSISTANCE_START+CLI_SIZE+y*CLI_WIDTH, persistance_buffer_color, sizeof(persistance_buffer_color));        
+        extram.write_bytes(RAM_SECT_PERSISTANCE_START+CLI_SIZE+y*CLI_WIDTH, persistance_buffer_color, sizeof(persistance_buffer_color));        
     }
 }
 
