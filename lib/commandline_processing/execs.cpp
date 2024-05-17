@@ -70,7 +70,8 @@ int execs_run(String full_input, execs_function_t* functions)
         
     }
 
-    return 0;
+    // Not found
+    return -1;
 }
 
 // test 1 'A B C' 2

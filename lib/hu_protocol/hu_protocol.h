@@ -74,6 +74,8 @@ void hu_protocol_MM_checkByteArray(byte* byteArray);
 hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet);
 // Decodes a packet. Returns hu_prot_receive_err_t. Check this enum for errors.
 hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet);
+void hu_protocol_decode_raw(hu_packet_t* packet, uint8_t* buffer );
+
 // Returns 0 on success
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet);
 // Prints the packet

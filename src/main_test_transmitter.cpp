@@ -4,7 +4,7 @@
 #include <SPI.h> // Not actually used but needed to compile
 #include <hu_protocol.h>
 
-#define RA_BITRATE          1000
+#define RA_BITRATE          2000
 #define RA_RX               3
 #define RA_TX               5
 #define RA_TR               2
@@ -24,9 +24,14 @@ void loop()
     packet.function=0x04;
     packet.source=hu_protocol_encode_address("2AG2MM");
     packet.destination=hu_protocol_encode_address("2AG2TM");
-    packet.length=HU_PROTOCOL_LENGTH_NON_DATA+2; // Do not include LRC in length
+    packet.length=HU_PROTOCOL_LENGTH_NON_DATA+6; // Do not include LRC in length
     packet.data[0]=0xAA;
     packet.data[1]=0xBB;
+    packet.data[2]=23;
+    packet.data[3]=53;
+    packet.data[4]=22;
+    packet.data[5]=11;
+
     packet.end=HU_PROTOCOL_END_BYTE;
     hu_protocol_transmit(&driver, &packet);
     delay(8000);

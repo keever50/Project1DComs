@@ -56,6 +56,7 @@ void cli_mem_reads(cli_terminal_t* term, uint8_t* destination, int address, int 
 void Tm_io::init()
 {
     SPI.begin();
+    Wire.begin();
     pinMode(RAM_CS, OUTPUT);
 
     // Set mode
@@ -93,14 +94,87 @@ void Tm_io::init()
 
 void Tm_io::print( String msg )
 {
-    cli_print(&cli, msg.c_str());
-    cli_draw(&cli);
-    Serial.print(msg);
+  cli_print(&cli, msg.c_str());
+  if(auto_flush) flush();
+  Serial.print(msg);
+}
+
+void Tm_io::put( char c )
+{
+  cli_put(&cli, c);
+  if(auto_flush) flush();
+  Serial.print(c);
 }
 
 void Tm_io::set_color( uint8_t raw )
 {
   cli.current_color=raw;
+}
+
+char Tm_io::get_char( bool blocking )
+{
+  char c=0;
+  while(blocking)
+  {
+    tm_sys.yield();
+
+    // Get key from keyboard
+    Wire.requestFrom(0x5F, 2);
+    c = Wire.read();
+    Wire.read();
+
+    // Serial overrides keyboard when char is available
+    if(Serial.available()) c = Serial.read();
+
+    // Return char when not null
+    if(c!='\0') return c;
+  }
+
+  // When non blocking, return char as is.
+  return c;
+}
+
+String Tm_io::input( bool echo )
+{
+  String in;
+  // Allocate a few bytes to reduce fragmentation.
+  in.reserve(20);
+
+  for(;;)
+  {
+    char c;
+    // Receive char and echo
+    c = tm_io.get_char(true);
+    if(echo) tm_io.put(c);
+
+    // When enter, return string + extra null terminator
+    if(c=='\n' || c=='\r')
+    {
+      in=in+'\0';
+      return in;
+    }
+
+    // Add char to string
+    in=in+c;
+  }
+
+}
+
+void Tm_io::flush()
+{
+  cli_draw(&cli);
+}
+
+void Tm_io::redraw()
+{
+  // Clean TFT
+  tft.clear();
+  // Clean out the persistance section
+  for(uint16_t i=RAM_SECT_PERSISTANCE_START;i<RAM_SECT_PERSISTANCE_END;i++)
+  {
+    extram.write_byte(i, 'X');
+  }
+  flush();
 }
 
 Tm_io tm_io;

@@ -173,6 +173,52 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     return HU_PROT_RECEIVE_RECEIVED;    
 }
 
+// Written by Kevin Witteveen
+void hu_protocol_decode_raw(hu_packet_t* packet, uint8_t* buffer )
+{
+
+    // Find the starting position of the packet by using the start byte and apply the offset if needed.
+    //int i=hu_protocol_find_start_pos();
+    //int offset=i;
+    int i=0;
+
+    // Construct packet
+    packet->start=buffer[i++];
+    packet->length=buffer[i++];
+    packet->function=buffer[i++];
+    packet->source=buffer[i++];
+    packet->destination=buffer[i++];
+
+
+    // Do some checks before getting the data
+    // Length is too long
+    int safelen=packet->length;
+    if(packet->length>HU_PROTOCOL_MAX_DATA_SIZE+HU_PROTOCOL_LENGTH_NON_DATA)
+    {
+        safelen=HU_PROTOCOL_MAX_DATA_SIZE;
+    }
+    // Length is too short
+    if(packet->length<HU_PROTOCOL_LENGTH_NON_DATA)
+    {
+        safelen=HU_PROTOCOL_LENGTH_NON_DATA;
+    }
+
+
+    // Transfer the data. This transfers nothing when length is the minimum packet length.
+    int data_length = safelen-HU_PROTOCOL_LENGTH_NON_DATA;
+    if(data_length>0)
+    {
+        memcpy(packet->data, buffer+i, data_length);
+        i=i+data_length;
+    }
+
+
+    // Get the last bytes
+    packet->end=buffer[i++];
+    packet->LRC=buffer[i++];
+
+}
+
 void hu_protocol_print_packet( hu_packet_t* packet )
 {
     Serial.println(F("----------[HU_Protocol packet]----------"));
