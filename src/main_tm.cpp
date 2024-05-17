@@ -8,6 +8,23 @@
 
 //Programs
 #include <tm_debug.h>
+int Etest( String full_input );
+int tm_exec_help( String full_input );
+int tm_exec_redraw( String full_input );
+execs_function_t mainexecs[]=
+{
+    {"test", Etest, "TEST"},
+    {"rec", tm_exec_receiver_open, "Receives HU packets"},
+    {"scram", tm_exec_scrambler_open, "Scrambler.\n     Usage: scram [bytes]"},
+    {"help", tm_exec_help, ""},
+    {"redraw", tm_exec_redraw, "Redraws the screen"},
+    {"", NULL} // Terminator
+};
+
+int tm_exec_redraw( String full_input )
+{
+    tm_io.redraw();
+}
 
 int Etest( String full_input )
 {
@@ -17,13 +34,19 @@ int Etest( String full_input )
     return 1;
 }
 
-execs_function_t mainexecs[]=
+int tm_exec_help( String full_input )
 {
-    {"test", Etest},
-    {"rec", tm_exec_receiver_open},
-    {"scram", tm_exec_scrambler_open},
-    {"", NULL} // Terminator
-};
+    for(int i=0;;i++)
+    {
+        if(mainexecs[i].function==NULL) return 0;
+        String command = mainexecs[i].name;
+        command.toUpperCase();
+        String desc = mainexecs[i].description;
+        tm_io.print(command+": \""+desc+"\"\n");
+    }
+}
+
+
 
 void setup()
 {
@@ -32,6 +55,8 @@ void setup()
     tm_rf.init();
     tm_io.init();
     tm_io.set_color(0b11111111);
+
+    tm_io.print(F("Welcome\nEnter help to list commands\n"));
 }
 
 void loop()

@@ -7,6 +7,7 @@ typedef struct
 {
     String name;
     int(*function)(String full_input);
+    String description;
 }
 execs_function_t;
 
