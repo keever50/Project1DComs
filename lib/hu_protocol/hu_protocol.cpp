@@ -387,6 +387,6 @@ void printUnionBytes(SensorUnion &sensorUnion)
     Serial.print(" ");
   }
   Serial.println();
-}
+} //gain access to the bytes using byteArray
 
 
