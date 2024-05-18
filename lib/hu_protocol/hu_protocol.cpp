@@ -335,4 +335,58 @@ void hu_protocol_MM_checkByteArray(byte* byteArray) {     //check function of he
   Serial.println(readings.minPot);
   Serial.print("Avg Pot: ");
   Serial.println(readings.avgPot);
-}  //check of je de exact values krijgt met 4 signifcante cijfers
+}  //check of je de exact values krijgt met 4 signifcante cijfers.
+
+
+
+//Written by Hayan: union coverter function
+
+//make the variables if not already done
+union SensorUnion {
+struct SensorReadings 
+{
+  float avgTemp; 
+  float avgLDR; 
+  float avgPot ;
+  float maxTemp ;
+  float maxLDR ;
+  float maxPot ;
+  float minTemp ; 
+  float minLDR ;
+  float minPot;
+}sensorReadings;
+byte byteArray[sizeof(sensorReadings)];  //the array of the converted bytes
+};
+
+void setup() {
+  Serial.begin(9600);
+  SensorUnion sensorUnion = 
+  {
+    .sensorReadings = 
+    {
+      6.40, 329.30, 324.20,
+      9.32, 367.00, 340.00,
+      4.22, 306.00, 305.00
+    } //test values//
+  };
+  printUnionBytes(sensorUnion); //call in loop with an empty struct
+}
+
+void printUnionBytes(SensorUnion &sensorUnion) 
+{
+  int structSize = sizeof(sensorUnion.byteArray);
+  
+  Serial.print("Bytes: ");
+  for (int i = 0; i < structSize; ++i) 
+  {
+    if (sensorUnion.byteArray[i] < 16) 
+    { // Ensures two-digit format
+      Serial.print("0");//debug
+    }
+    Serial.print(sensorUnion.byteArray[i], HEX);
+    Serial.print(" ");
+  }
+  Serial.println();
+}
+
+
