@@ -11,7 +11,7 @@
 // Written by Kevin Witteveen
 #define HU_PROTOCOL_START_BYTE      0x01 // Starting byte
 #define HU_PROTOCOL_END_BYTE        0x04 // Ending byte
-#define HU_PROTOCOL_MAX_DATA_SIZE   36 // Most data a packet can send
+#define HU_PROTOCOL_MAX_DATA_SIZE   37 // Most data a packet can send
 #define HU_PROTOCOL_FUNCTION_RANGE  13 // Highest function we can have
 #define HU_PROTOCOL_MIN_PACKET_LEN  7 // Minimal amount of total bytes the smallest packet can have
 #define HU_PROTOCOL_START_LENGTH    2 // Bytes before length
