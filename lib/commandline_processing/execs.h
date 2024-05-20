@@ -5,9 +5,9 @@
 
 typedef struct 
 {
-    String name;
+    const char* name;
     int(*function)(String full_input);
-    String description;
+    const char* description;
 }
 execs_function_t;
 

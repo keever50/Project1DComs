@@ -15,10 +15,11 @@ execs_function_t mainexecs[]=
 {
     {"test", Etest, "TEST"},
     {"rec", tm_exec_receiver_open, "Receives HU packets"},
-    {"scram", tm_exec_scrambler_open, "Scrambler.\n     Usage: scram [bytes]"},
+    {"scram", tm_exec_scrambler_open, "(Scram)bler.\n     Usage: scram (bytes)"},
     {"help", tm_exec_help, ""},
     {"redraw", tm_exec_redraw, "Redraws the screen"},
-    {"", NULL} // Terminator
+    {"gen", tm_exec_packet_generator_open, "Opens HU packet (gen)eration menu"},
+    {"", NULL, ""} // Terminator
 };
 
 int tm_exec_redraw( String full_input )

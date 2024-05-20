@@ -94,6 +94,7 @@ void Tm_io::init()
 
 void Tm_io::print( String msg )
 {
+  tm_sys.yield();
   cli_print(&cli, msg.c_str());
   if(auto_flush) flush();
   Serial.print(msg);

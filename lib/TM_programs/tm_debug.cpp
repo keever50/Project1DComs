@@ -2,6 +2,8 @@
 
 #include <tm_debug.h>
 #include <execs.h>
+hu_packet_t debug_packetbuffer;
+
 
 int tm_exec_scrambler_open( String full_command )
 {
@@ -95,4 +97,95 @@ int tm_exec_receiver_open( String full_command )
 
     return 0;
 }
+
+
+int tm_exec_packet_generator_open( String full_command )
+{
+    for(;;)
+    {
+        tm_io.set_auto_flush(false);
+        tm_io.print(F("---Packet generator---\n"));
+        tm_io.print(F("1) Auto set\n"));
+        tm_io.print(F("2) Start byte\n"));
+        tm_io.print(F("3) length byte\n"));
+        tm_io.print(F("4) Function byte\n"));
+        tm_io.print(F("5) Source byte (EG: 2AG3TM)\n"));
+        tm_io.print(F("6) Destination byte (EG: 1AG2MM)\n"));
+        tm_io.print(F("7) End byte\n"));
+        tm_io.print(F("8) View\n"));
+        tm_io.print(F("9) Exit\n"));
+        tm_io.set_auto_flush(true);
+        tm_io.flush();
+
+        String in;
+        in = tm_io.input(true);
+        uint8_t select = execs_get_arg(in, 0).toInt();
+        switch(select)
+        {
+            case 0:
+            {
+
+                break;
+            }
+            case 1:
+            {
+                tm_io.print(F("func: "));
+                in = tm_io.input(true);
+
+                break;
+            }
+            case 2:
+            {
+                in = tm_io.input(true);
+                debug_packetbuffer.start = execs_get_arg(in, 0).toInt();
+                break;
+            }
+            case 3:
+            {
+                in = tm_io.input(true);
+                debug_packetbuffer.length = execs_get_arg(in, 0).toInt();
+                break;
+            }
+            case 4:
+            {
+                in = tm_io.input(true);
+                debug_packetbuffer.function = execs_get_arg(in, 0).toInt();
+                break;
+            }                
+            case 5:
+            {
+                in = tm_io.input(true);
+                debug_packetbuffer.source = hu_protocol_encode_address(execs_get_arg(in, 0).c_str()); // Add checks for wrong address
+                break;
+            }        
+            case 6:
+            {
+                in = tm_io.input(true);
+                debug_packetbuffer.destination = hu_protocol_encode_address(execs_get_arg(in, 0).c_str()); // Add checks for wrong address
+                break;
+            }        
+            case 7:
+            {
+                in = tm_io.input(true);
+                debug_packetbuffer.end = execs_get_arg(in, 0).toInt();
+                break;
+            }        
+
+            case 8:
+            {
+                tm_prog_receiver_print_packet( debug_packetbuffer );
+                tm_io.set_color(0b11111111);
+                tm_io.print(F("..."));
+                tm_io.input(false);
+                break;
+            }
+            case 9:
+            {
+                return 0;
+            }
+        }
+    }
+
+}
+
 #endif

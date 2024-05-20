@@ -62,7 +62,7 @@ int execs_run(String full_input, execs_function_t* functions)
         if(entry.function==NULL) break;
 
         // Check if it matches
-        if(entry.name == command)
+        if(!strcmp(entry.name, command.c_str()))
         {
             // Then run and return its return
             return entry.function(full_input);
