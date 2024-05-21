@@ -3,7 +3,7 @@
 #pragma once
 
 #ifdef TEST_MODULE
-#include <RH_ASK_mod.h>
+#include <RH_ASK.h>
 #else
 #include <RH_ASK.h>
 #endif
@@ -11,7 +11,7 @@
 // Written by Kevin Witteveen
 #define HU_PROTOCOL_START_BYTE      0x01 // Starting byte
 #define HU_PROTOCOL_END_BYTE        0x04 // Ending byte
-#define HU_PROTOCOL_MAX_DATA_SIZE   36 // Most data a packet can send
+#define HU_PROTOCOL_MAX_DATA_SIZE   37 // Most data a packet can send
 #define HU_PROTOCOL_FUNCTION_RANGE  13 // Highest function we can have
 #define HU_PROTOCOL_MIN_PACKET_LEN  7 // Minimal amount of total bytes the smallest packet can have
 #define HU_PROTOCOL_START_LENGTH    2 // Bytes before length
@@ -74,11 +74,17 @@ void hu_protocol_MM_checkByteArray(byte* byteArray);
 hu_prot_receive_err_t hu_protocol_receive(RH_ASK* driver, hu_packet_t* packet);
 // Decodes a packet. Returns hu_prot_receive_err_t. Check this enum for errors.
 hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet);
+void hu_protocol_decode_raw(hu_packet_t* packet, uint8_t* buffer );
+
 // Returns 0 on success
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet);
 // Prints the packet
 void hu_protocol_print_packet( hu_packet_t* packet );
 
+// Sets the global address
+void hu_protocol_set_address( uint8_t addr );
+// Gets the global address
+uint8_t hu_protocol_get_address();
 
 // Written by Marijn Boumans
 uint8_t hu_protocol_encode_address(const char* str);

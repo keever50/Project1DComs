@@ -51,7 +51,7 @@ void cli_shift_up( cli_terminal_t* term )
     }
 
     // Clear last line
-    memset(cli_line_buffer,0,sizeof(cli_line_buffer));
+    memset(cli_line_buffer,' ',sizeof(cli_line_buffer));
     cli_mem_writes(term, cli_line_buffer, top-w, w);
 
     // for(int line=1; line<term->height; line++)
@@ -156,15 +156,15 @@ unsigned char cli_execute( cli_terminal_t* term, const char* command, cli_execut
     //char* arg = (char*)malloc(maxarglen);
     char arg[32];
     memset(arg,0,sizeof(arg));
-    cli_print(term, command);
+    //cli_print(term, command);
     cli_get_next_argument_iterative(&iter, command, arg, maxarglen, &arglen);   
     for(int i=0;i<amount;i++)
     {
         const char* name = executables->executable_names[i];
-        cli_print(term, name);
+        //cli_print(term, name);
         if(!strcmp(name, arg))
         {
-            cli_print(term, "yes\n");
+            //cli_print(term, "yes\n");
             //free(arg);
             return executables->executable_functions[i](term, command);
         }

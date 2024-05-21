@@ -8,12 +8,7 @@
 #include <cli_processing.h>
 #include <TFT_22_ILI9225.h>
 
-#define CLI_FONT_HEIGHT 8
-#define CLI_FONT_WIDTH  6
-#define CLI_HEIGHT  5
-#define CLI_WIDTH   20
-#define SCR_WIDTH   220
-#define SCR_HEIGHT  176
+
 
 #define TM_RED  0b11100000
 #define TM_GREEN 0b00011000
