@@ -7,6 +7,8 @@
 #define PN532_IRQ   (2)
 #define PN532_RESET (3)
 
+char MM = 0;
+
 Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
 LiquidCrystal_I2C lcd(0x027, 16, 2);
 
