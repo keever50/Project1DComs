@@ -24,7 +24,7 @@ int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet)
 
     // Move start byte further away for preambles for testing only
     int offset=0;
-    int i=offset;
+    int i=0;
 
     // Start
     hu_protocol_buffer[i++]=packet->start;
@@ -358,20 +358,6 @@ struct SensorReadings
 byte byteArray[sizeof(sensorReadings)];  //the array of the converted bytes
 };
 
-void setup() {
-  Serial.begin(9600);
-  SensorUnion sensorUnion = 
-  {
-    .sensorReadings = 
-    {
-      6.40, 329.30, 324.20,
-      9.32, 367.00, 340.00,
-      4.22, 306.00, 305.00
-    } //test values//
-  };
-  printUnionBytes(sensorUnion); //call in loop with an empty struct
-}
-
 void printUnionBytes(SensorUnion &sensorUnion) 
 {
   int structSize = sizeof(sensorUnion.byteArray);
@@ -388,5 +374,21 @@ void printUnionBytes(SensorUnion &sensorUnion)
   }
   Serial.println();
 } //gain access to the bytes using byteArray
+
+
+void setup00() {
+  Serial.begin(9600);
+  SensorUnion sensorUnion = 
+  {
+    .sensorReadings = 
+    {
+      6.40, 329.30, 324.20,
+      9.32, 367.00, 340.00,
+      4.22, 306.00, 305.00
+    } //test values//
+  };
+  printUnionBytes(sensorUnion); //call in loop with an empty struct
+}
+
 
 
