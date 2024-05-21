@@ -120,175 +120,179 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       case 0x92:
       if (memcmp(UID_tag, startlocatie1, 4)== 0)
       {
-        Serial.println("Startlocatie 1");
         i=1;
+        route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie19, 4) == 0)
       {
-        Serial.println("Startlocatie 19");
+        MM++;
         i=19;
+        route(i);
         break;
       }
 
       case 0x1C:
       if (memcmp(UID_tag, startlocatie2, 4)== 0)
       {
-        Serial.println("Startlocatie 2");
+        MM++;
         i=2;
+        route(i);
         break;
       }
 
       case 0x02:
       if (memcmp(UID_tag, startlocatie3, 4)== 0)
       {
-        Serial.println("Startlocatie 3");
         i=3;
+        route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie6, 4)== 0)
       {
-        Serial.println("Startlocatie 6");
         i=6;
+        route(i);
         break;
       }
 
       case 0xD2:
       if (memcmp(UID_tag, startlocatie4, 4)== 0)
       {
-        Serial.println("Startlocatie 4");
         i=4;
+        route(i);
         break;
       }
 
       case 0xC2:
       if (memcmp(UID_tag, startlocatie5, 4)== 0)
       {
-        Serial.println("Startlocatie 5");
         i=5;
+        route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie18, 4) == 0)
       {
-        Serial.println("Startlocatie 18");
         i=18;
+        route(i);
         break;
       }
 
       case 0x52:
       if (memcmp(UID_tag, startlocatie7, 4)== 0)
       {
-        Serial.println("Startlocatie 7");
         i=7;
+        route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie10, 4)== 0)
       {
-        Serial.println("Startlocatie 10");
         i=10;
+        route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie22, 4)== 0)
       {
-        Serial.println("Startlocatie 22");
         i=22;
+        route(i);
         break;
       }
 
       case 0x72:
       if (memcmp(UID_tag, startlocatie8, 4)== 0)
       {
-        Serial.println("Startlocatie 8");
         i=8;
+        route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie12, 4)== 0)
       {
-        Serial.println("Startlocatie 12");
         i=12;
+        route(i);
         break;
       }
 
       case 0x32:
       if (memcmp(UID_tag, startlocatie9, 4)== 0)
       {
-        Serial.println("Startlocatie 9");
         i=9;
+        route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie17, 4)== 0)
       {
-        Serial.println("Startlocatie 17");
         i=17;
+        route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie23, 4)== 0)
       {
-        Serial.println("Startlocatie 23");
         i=23;
+        route(i);
         break;
       }
 
       case 0xB2:
       if (memcmp(UID_tag, startlocatie11, 4)== 0)
       {
-        Serial.println("Startlocatie 11");
+        MM++;
         i=11;
+        route(i);
         break;
       }
 
       case 0x12:
       if (memcmp(UID_tag, startlocatie13, 4)== 0)
       {
-        Serial.println("Startlocatie 13");
         i=13;
+        route(i);
         break;
       }
 
       case 0xA2:
       if (memcmp(UID_tag, startlocatie14, 4)== 0)
       {
-        Serial.println("Startlocatie 14");
+        MM++;
         i=14;
+        route(i);
         break;
       }
 
       case 0xE2:
       if (memcmp(UID_tag, startlocatie15, 4)== 0)
       {
-        Serial.println("Startlocatie 15");
+        MM++;
         i=15;
+        route(i);
         break;
       }
 
       case 0xFC:
       if (memcmp(UID_tag, startlocatie16, 4)== 0)
       {
-        Serial.println("Startlocatie 16");
         i=16;
+        route(i);
         break;
       }
 
       case 0xF2:
       if (memcmp(UID_tag, startlocatie20, 4)== 0)
       {
-        Serial.println("Startlocatie 20");
         i=20;
+        route(i);
         break;
       }
 
       case 0x82:
       if (memcmp(UID_tag, startlocatie21, 4)== 0)
       {
-        Serial.println("Startlocatie 21");
         i=21;
+        route(i);
         break;
       }
 
       case 0xF3:
       if (memcmp(UID_tag, testkaart1, 4)== 0)
       {
-        Serial.println("Testkaart 1");
         i=0;
         route(i);
         break;
@@ -297,7 +301,6 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       case 0xA5:
       if (memcmp(UID_tag, testkaart2, 4)== 0)
       {
-        Serial.println("Testkaart 2");
         i=0;
         route(i);
         break;
