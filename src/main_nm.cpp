@@ -6,23 +6,46 @@
 
 #define PN532_IRQ   (2)
 #define PN532_RESET (3)
-#define Button_pin (13)
 
 Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
 LiquidCrystal_I2C lcd(0x027, 16, 2);
 
 void route(char i);
 char kaartbepaler();
+void stapper();
 
-char buttonstate = 0;
+byte arrow_up[] = 
+{
+  B00100,
+  B01110,
+  B11111,
+  B00100,
+  B00100,
+  B00100,
+  B00100,
+  B00100
+};
+
+byte arrow_down[] = 
+{
+  B00100,
+  B00100,
+  B00100,
+  B00100,
+  B00100,
+  B11111,
+  B01110,
+  B00100
+};
 
 void setup(void)
 {
   Serial.begin(115200);
-  pinMode(Button_pin, INPUT);
   nfc.begin();
   lcd.init();
-  lcd.backlight(); 
+  lcd.backlight();
+  lcd.createChar(0, arrow_up);
+  lcd.createChar(1, arrow_down);
   uint32_t status = nfc.getFirmwareVersion();
   if (!status) {
     Serial.print("Geen bord gedetecteerd!");
@@ -33,6 +56,7 @@ void setup(void)
   lcd.setCursor(0, 1);
   lcd.print("kaart:");
 }
+
 void loop(void)
 {
   kaartbepaler();
@@ -75,6 +99,9 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
 
   if (UID)
   {
+    lcd.clear();
+    lcd.print("Kaart gescand");
+    delay(2000);
     lcd.clear();
     Serial.println("De gevonde UID is:");
 
@@ -278,55 +305,90 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       route(i);
       break;
     }
-
-    Serial.println("");
-    Serial.println("Scan nieuwe kaart:");
-    delay(1000);
 }
 }
 
 void route(char i)
 {
+    lcd.setCursor(0,0);
+    lcd.print("Route wordt");
+    lcd.setCursor(0,1);
+    lcd.print("berekend.....");
+    delay(3000);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Route gevonden!");
+    delay(1000);
+    lcd.clear();
   switch (i)
   {
     case 0:
-    while (digitalRead(Button_pin) == LOW)
-    {
-    lcd.setCursor(0,0);
-    lcd.print("ERROR:");
+    lcd.print("geen geldige");
     lcd.setCursor(0,1);
-    lcd.print("onbekende kaart");
-    if ((digitalRead(Button_pin) == HIGH) && (buttonstate == 0))
-    {
-      lcd.clear();
-      buttonstate ++;
-    }
-     if ((digitalRead(Button_pin) == HIGH) && (buttonstate == 1))
-     {
-      lcd.setCursor(0,0);
-      lcd.print("Volgende stap");
-     }
-    }
-    
+    lcd.print("route gevonden");
+    break;
+
     case 1:
+    lcd.print("2");
+    lcd.write(1);
+    lcd.print(" 9");
+    lcd.write(0x7E);
+    lcd.print(" 3");
+    lcd.write(0x7F);
     break;
 
     case 2:
+    lcd.print("1");
+    lcd.write(1);
+    lcd.print(" 44");
+    lcd.write(0x7E);
+    lcd.print(" 11");
+    lcd.write(0x7E);
     break;
 
     case 3:
+    lcd.print("1");
+    lcd.write(1);
+    lcd.print(" 5");
+    lcd.write(0x7E);
+    lcd.print(" 1");
+    lcd.write(0x7E);
     break;
 
     case 4:
+    lcd.print("1");
+    lcd.write(1);
+    lcd.print(" 12");
+    lcd.write(0x7E);
+    lcd.print(" 1");
+    lcd.write(0x7E);
     break;
 
     case 5:
+    lcd.print("1");
+    lcd.write(1);
+    lcd.print(" 19");
+    lcd.write(0x7E);
+    lcd.print(" 1");
+    lcd.write(0x7E);
     break;
 
     case 6:
+    lcd.print("1");
+    lcd.write(1);
+    lcd.print(" 28");
+    lcd.write(0x7E);
+    lcd.print(" 1");
+    lcd.write(0x7E);
     break;
 
     case 7:
+    lcd.print("1");
+    lcd.write(1);
+    lcd.print(" 32");
+    lcd.write(0x7E);
+    lcd.print(" 1");
+    lcd.write(0x7E);
     break;
 
     case 8:
