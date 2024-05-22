@@ -66,6 +66,7 @@ struct hu_protocol_SensorReadings {// selectie floats in een bepaalde orde
 };
 void hu_protocol_MM_structToByteArray(const hu_protocol_SensorReadings &readings, byte* byteArray);
 void hu_protocol_MM_checkByteArray(byte* byteArray);
+void printUnionBytes(SensorUnion &sensorUnion)
 //
 
 
