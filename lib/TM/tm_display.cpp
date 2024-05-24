@@ -55,7 +55,7 @@ void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli)
                 //tft.setBackgroundColor(COLOR_BLUE);
                 if(c==' ')
                 {
-                    tft.fillRectangle(x*CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT, x*CLI_FONT_WIDTH+CLI_FONT_WIDTH+1, y*CLI_FONT_HEIGHT+CLI_FONT_HEIGHT-1, COLOR_BLACK);
+                    tft.fillRectangle(x*CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT, x*CLI_FONT_WIDTH+CLI_FONT_WIDTH+2, y*CLI_FONT_HEIGHT+CLI_FONT_HEIGHT-1, COLOR_BLACK);
                 }else{
                     tft.drawChar(x*CLI_FONT_WIDTH, y*CLI_FONT_HEIGHT, c, calculated_color);
                 }
