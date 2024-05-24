@@ -52,10 +52,11 @@ void tm_prog_receiver_print_packet( hu_packet_t& packet )
 
     // Data
     tm_io.set_color(0b11010110);
-    tm_io.print(F("DATA START\n"));  
+    tm_io.print(F("DATA START"));  
     for( uint8_t i=0; i<packet.length-HU_PROTOCOL_LENGTH_NON_DATA; i++)
     {
-       tm_io.print("["+String(i) + ":" + String(packet.data[i])+"]");
+        if(i%5==0) tm_io.print("\n");
+        tm_io.print(String(i) + ":" + String( packet.data[i], HEX)+"|");
     }
     tm_io.print(F("\nDATA END\n"));  
     tm_io.set_color(0b10010111);
