@@ -308,6 +308,8 @@ void hu_protocol_MM_structToByteArray(const hu_protocol_SensorReadings &readings
   Serial.println();
 }
 
+// Written by Hayan Rafee
+
 void hu_protocol_MM_checkByteArray(byte* byteArray) {     //check function of het omzetten goed is gegaan
   // Retrieve the bytes from the byteArray    // de bytes array is pakket - (SoS + sours + dest + PL + LRC + FC)      
   hu_protocol_SensorReadings readings;
