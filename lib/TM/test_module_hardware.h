@@ -1,3 +1,5 @@
+// 130 mA
+
 #pragma once
 
 #if defined(TEST_MODULE) || defined(TM_MEM_HACK_TEST)
@@ -42,7 +44,7 @@
 #define RAM_MOSI TFT_SDI
 #define RAM_MISO 50
 #define RAM_CLK TFT_CLK
-#define RAM_SPEED 8000000
+#define RAM_SPEED 4000000
 
 // Layout
 #define RAM_SECT_GRAPHICS_START 0

@@ -18,6 +18,13 @@ void setup()
 }
 
 hu_packet_t packet;
+
+union
+{
+    float f;
+    uint8_t bytes[4];
+}fbyte;
+
 void loop()
 {
     
@@ -26,9 +33,13 @@ void loop()
     packet.source=hu_protocol_encode_address("2AG2MM");
     packet.destination=hu_protocol_encode_address("2AG2TM");
     packet.length=HU_PROTOCOL_LENGTH_NON_DATA+HU_PROTOCOL_MAX_DATA_SIZE; // Do not include LRC in length
-    for(int i=0;i<HU_PROTOCOL_MAX_DATA_SIZE;i++)
+    fbyte.f = 3.14159265359;
+    for(int i=0;i<HU_PROTOCOL_MAX_DATA_SIZE;i=i+4)
     {
-        packet.data[i]=(uint8_t)rand();
+        packet.data[i+0]=fbyte.bytes[0];
+        packet.data[i+1]=fbyte.bytes[1];
+        packet.data[i+2]=fbyte.bytes[2];
+        packet.data[i+3]=fbyte.bytes[3];
     }
 
     packet.end=HU_PROTOCOL_END_BYTE;

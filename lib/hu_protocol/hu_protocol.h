@@ -22,7 +22,7 @@
 
 #define HU_PROTOCOL_FUNCTION_OPVRAAG_MEETWAARDES    0x05
 #define HU_PROTOCOL_FUNTION_OVERDRAGEN_MEETWAARDES    0x06
-#define HU_PROTOCOL_TIMEOUT 500
+#define HU_PROTOCOL_TIMEOUT 1000
 
 
 
@@ -79,8 +79,12 @@ void hu_protocol_decode_raw(hu_packet_t* packet, uint8_t* buffer );
 
 // Returns 0 on success
 int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet);
+int hu_protocol_transmit_manual(RH_ASK* driver, hu_packet_t* packet, bool blocking, bool auto_LRC);
 // Prints the packet
 void hu_protocol_print_packet( hu_packet_t* packet );
+
+// Calculates the LRC only
+int hu_protocol_calculate_LRC(hu_packet_t* packet);
 
 // Sets the global address
 void hu_protocol_set_address( uint8_t addr );
