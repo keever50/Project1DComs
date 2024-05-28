@@ -1,5 +1,3 @@
-
-
 #include <hu_protocol.h>
 #include <Arduino.h>
 #include <RH_ASK.h>
@@ -9,14 +7,16 @@
 #include <SD.h> // cs = 4, clk = 13, mosi = 11, miso = 12.
 
 LiquidCrystal_I2C lcd(0x27,  16, 2); 
-RH_ASK rh_ask(500, 3, 11, 0, false); // Bitrate, receive pin, transmit pin, select pin(unused), select inverse(unused)
+RH_ASK rh_ask(500, 3, 9, 0, false); // Bitrate, receive pin, transmit pin, select pin(unused), select inverse(unused)
 
 File dataFile;
 File extraFile;
 String dataString;
 
-void AskData(void);
+void AskData(int fileReadNR1);
 void SDtoLCD2(char ltr);
+void saveData(int fileWriteNR1, String writeString1);
+void HUontvangen(void);
 
 int fileReadNR = 0;
 int fileWriteNR = 0;
@@ -41,6 +41,7 @@ void setup()
 
 void loop()
 {
+    HUontvangen();
     if(digitalRead(4) == LOW)
     {
         fileReadNR +=1;   
@@ -65,6 +66,40 @@ void loop()
         
     }
 
+}
+
+void HUontvangen(void)
+{
+    //Serial.println("Receiving...");
+
+    //The function hu_protocol_receive will fill this packet in.
+    hu_packet_t packet;
+
+    /*Check if we received data, otherwise it returns HU_PROT_RECEIVE_LISTENING.
+    It can also return HU_PROT_RECEIVE_IGNORE in case the packet was not for us.*/
+    hu_prot_receive_err_t err = hu_protocol_receive( &rh_ask, &packet );
+    if(err != HU_PROT_RECEIVE_IGNORE && err != HU_PROT_RECEIVE_LISTENING)
+    {
+        // Print out the packet on a pretty way
+        hu_protocol_print_packet(&packet);
+    }    
+
+    // You can extract variables this way
+    uint8_t function = packet.function;
+
+    // We can extract data and calculate how much data we have by subtracting the non-data bytes from the packet length we received.
+    uint8_t* data = packet.data;
+    for(int ss=0; ss<strlen((char*)data); ss++)
+    {
+        dataString +=(char)data[ss];
+    }
+    if(err==HU_PROT_RECEIVE_RECEIVED)
+    {   
+        fileWriteNR +=1;
+        Serial.println(dataString);
+        saveData(fileWriteNR, dataString);
+    }
+    delay(500);
 }
 
 void saveData(int fileWriteNR1, String writeString1)
