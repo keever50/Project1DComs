@@ -18,6 +18,7 @@ void route(char i);
 void kaartbepaler();
 void stapper();
 void CO_route();
+int RF();
 
 byte arrow_up[] = 
 {
@@ -474,6 +475,21 @@ void route(char i)
 
 void CO_route()
 {
+}
+
+int RF()
+{
+  hu_packet_t packet;
+  hu_prot_receive_err_t err = hu_protocol_receive( &rh_ask, &packet );
+
+  if(err != HU_PROT_RECEIVE_IGNORE && err != HU_PROT_RECEIVE_LISTENING)
+    {
+        hu_protocol_print_packet(&packet);
+    }
+  uint8_t function = packet.function;
+  uint8_t data_length = packet.length-HU_PROTOCOL_LENGTH_NON_DATA;
+  uint8_t* data = packet.data;
+
 }
 #endif
 
