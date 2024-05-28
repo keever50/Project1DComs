@@ -16,7 +16,7 @@ LiquidCrystal_I2C lcd(0x027, 16, 2);
 
 void nm_route(char i);
 void kaartbepaler();
-void CO_route();
+void CO_route(char i);
 int RF();
 
 byte arrow_up[] = 
@@ -136,7 +136,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         i=19;
         if (MM == 6)
         {
-          CO_route();
+          CO_route(i);
         }
         else
         nm_route(i);
@@ -150,7 +150,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         i=2;
         if (MM == 6)
         {
-          CO_route();
+          CO_route(i);
         }
         else
         nm_route(i);
@@ -254,7 +254,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         i=11;
         if (MM == 6)
         {
-          CO_route();
+          CO_route(i);
         }
         else
         nm_route(i);
@@ -276,7 +276,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         i=14;
         if (MM == 6)
         {
-          CO_route();
+          CO_route(i);
         }
         else
         nm_route(i);
@@ -290,7 +290,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         i=15;
         if (MM == 6)
         {
-          CO_route();
+          CO_route(i);
         }
         else
         nm_route(i);
@@ -328,7 +328,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         i=0;
         if (MM == 6)
         {
-          CO_route();
+          CO_route(i);
         }
         else
         nm_route(i);
@@ -342,7 +342,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         i=0;
         if (MM == 6)
         {
-          CO_route();
+          CO_route(i);
         }
         else
         nm_route(i);
@@ -494,13 +494,35 @@ void nm_route(char i)
   }
 }
 
-void CO_route()
+void CO_route(char i)
 {
   lcd.clear();
   lcd.print("De route naar CO");
   lcd.setCursor(0,1);
   lcd.print("wordt geladen");
-  delay(5000);
+  delay(3000);
+  lcd.clear();
+  switch (i)
+  {
+    case 0:
+    lcd.print("ROT OP");
+    break;
+
+    case 2:
+    break;
+
+    case 11:
+    break;
+
+    case 14:
+    break;
+
+    case 15:
+    break;
+
+    case 19:
+    break;
+  }
 }
 
 int RF()
@@ -508,7 +530,6 @@ int RF()
 hu_packet_t packet;
 hu_prot_receive_err_t hu_protocolol_recieve(RH_ASK* driver, hu_packet_t* packet);
 uint8_t data = packet.function;
-
 }
 #endif
 
