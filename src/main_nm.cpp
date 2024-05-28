@@ -3,18 +3,22 @@
 #include <Wire.h>
 #include <Adafruit_PN532.h>
 #include <LiquidCrystal_I2C.h>
+#include <hu_protocol.h>
 
 #define PN532_IRQ   (2)
 #define PN532_RESET (3)
 
 char MM = 0;
+RH_ASK rh_ask(500, 3, 11, 0, false);
 
 Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
 LiquidCrystal_I2C lcd(0x027, 16, 2);
 
 void route(char i);
-char kaartbepaler();
+void kaartbepaler();
 void stapper();
+void CO_route();
+int RF();
 
 byte arrow_up[] = 
 {
@@ -45,9 +49,11 @@ void setup(void)
   Serial.begin(115200);
   nfc.begin();
   lcd.init();
+  rh_ask.init();
   lcd.backlight();
   lcd.createChar(0, arrow_up);
   lcd.createChar(1, arrow_down);
+  //hu_protocol_set_address();
   uint32_t status = nfc.getFirmwareVersion();
   if (!status) {
     Serial.print("Geen bord gedetecteerd!");
@@ -61,9 +67,18 @@ void setup(void)
 
 void loop(void)
 {
-  kaartbepaler();
+  if (MM == 5)
+  {
+    lcd.clear();
+    lcd.print("alle MM's");
+    lcd.setCursor(0, 1);
+    lcd.print("gevonden");
+    delay(2000);
+    CO_route();
+  }
+  else kaartbepaler();
 }
-char kaartbepaler()
+void kaartbepaler()
 {
 uint8_t startlocatie1[4] = {0x92, 0x83, 0x1B, 0xCC};
 uint8_t startlocatie2[4] = {0x1C, 0x31, 0xFC, 0x42};
@@ -126,6 +141,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       }
       if (memcmp(UID_tag, startlocatie19, 4) == 0)
       {
+        //hu_protocol_transmit()
         MM++;
         i=19;
         route(i);
@@ -135,6 +151,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       case 0x1C:
       if (memcmp(UID_tag, startlocatie2, 4)== 0)
       {
+        //hu_protocol_transmit()
         MM++;
         i=2;
         route(i);
@@ -234,6 +251,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       case 0xB2:
       if (memcmp(UID_tag, startlocatie11, 4)== 0)
       {
+        //hu_protocol_transmit()
         MM++;
         i=11;
         route(i);
@@ -251,6 +269,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       case 0xA2:
       if (memcmp(UID_tag, startlocatie14, 4)== 0)
       {
+        //hu_protocol_transmit()
         MM++;
         i=14;
         route(i);
@@ -260,6 +279,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       case 0xE2:
       if (memcmp(UID_tag, startlocatie15, 4)== 0)
       {
+        //hu_protocol_transmit()
         MM++;
         i=15;
         route(i);
@@ -293,6 +313,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       case 0xF3:
       if (memcmp(UID_tag, testkaart1, 4)== 0)
       {
+        MM++;
         i=0;
         route(i);
         break;
@@ -301,6 +322,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       case 0xA5:
       if (memcmp(UID_tag, testkaart2, 4)== 0)
       {
+        MM++;
         i=0;
         route(i);
         break;
@@ -445,12 +467,29 @@ void route(char i)
     break;
     
     default:
-    lcd.clear();
-    lcd.setCursor(0,0);
     lcd.print("ERROR:");
     lcd.setCursor(0,1);
     lcd.print("SYSTEEMFOUT!");
   }
+}
+
+void CO_route()
+{
+}
+
+int RF()
+{
+  hu_packet_t packet;
+  hu_prot_receive_err_t err = hu_protocol_receive( &rh_ask, &packet );
+
+  if(err != HU_PROT_RECEIVE_IGNORE && err != HU_PROT_RECEIVE_LISTENING)
+    {
+        hu_protocol_print_packet(&packet);
+    }
+  uint8_t function = packet.function;
+  uint8_t data_length = packet.length-HU_PROTOCOL_LENGTH_NON_DATA;
+  uint8_t* data = packet.data;
+
 }
 #endif
 

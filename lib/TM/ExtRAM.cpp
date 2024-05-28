@@ -56,7 +56,7 @@ int ExtRAM::set_mode(uint8_t mode)
   write_reg(EXTRAM_REG_WRMR, mode);
   set_cs(false);
 
-  delay(1);
+  delay(2);
 
   // Read and verifiy
   set_cs(true);
@@ -65,7 +65,7 @@ int ExtRAM::set_mode(uint8_t mode)
 
   Serial.print(read);
 
-  delay(1);
+  delay(2);
   if(read!=mode)
   {
     return 1;
