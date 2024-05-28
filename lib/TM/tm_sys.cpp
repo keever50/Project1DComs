@@ -6,7 +6,7 @@ Tm_sys tm_sys;
 
 void Tm_sys::init()
 {
-    wdt_enable(WDTO_4S);
+    wdt_enable(WDTO_2S);
 }
 
 void Tm_sys::yield()

@@ -58,7 +58,7 @@ void Tm_io::init()
     SPI.begin();
     Wire.begin();
     pinMode(RAM_CS, OUTPUT);
-
+    delay(50);
     // Set mode
     extram.set_mode(EXTRAM_MODE_SEQ);
 
@@ -72,9 +72,10 @@ void Tm_io::init()
     {
       extram.write_byte(i, ' ');
     }
-
+    delay(10);
     // TFT init
     tft.begin();
+    delay(10);
     tft.clear();
     
     tft.setFont(Terminal6x8);
@@ -137,6 +138,8 @@ char Tm_io::get_char( bool blocking )
 
 String Tm_io::input( bool echo )
 {
+  print(">");
+
   String in;
   // Allocate a few bytes to reduce fragmentation.
   in.reserve(20);

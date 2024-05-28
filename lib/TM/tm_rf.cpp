@@ -38,6 +38,11 @@ int Tm_rf::transmit_raw( uint8_t* raw, uint8_t len, bool blocking )
     return success;
 }
 
+RHGenericDriver::RHMode Tm_rf::get_mode()
+{
+    return rh_ask.mode();
+}
+
 Tm_rf tm_rf;
 
 #endif

@@ -56,6 +56,67 @@ int hu_protocol_transmit(RH_ASK* driver, hu_packet_t* packet)
     return 0;
 }
 
+int hu_protocol_transmit_manual(RH_ASK* driver, hu_packet_t* packet, bool blocking, bool auto_LRC)
+{
+    // Prepare transmit buffer //
+
+    // Move start byte further away for preambles for testing only
+    int offset=0;
+    int i=0;
+
+    // Start
+    hu_protocol_buffer[i++]=packet->start;
+    hu_protocol_buffer[i++]=packet->length;
+    hu_protocol_buffer[i++]=packet->function;
+    hu_protocol_buffer[i++]=packet->source;
+    hu_protocol_buffer[i++]=packet->destination;
+
+    // Data
+    int data_len = packet->length-HU_PROTOCOL_LENGTH_NON_DATA;
+    for(int p=0;p<data_len;p++)
+    {
+        hu_protocol_buffer[i++]=packet->data[p];
+    }
+    
+    // End
+    hu_protocol_buffer[i++]=packet->end;
+    
+    // LRC
+    if(auto_LRC) packet->LRC = get_LRC(hu_protocol_buffer+offset, HU_PROTOCOL_START_LENGTH+packet->length);
+    hu_protocol_buffer[i++]=packet->LRC;
+
+
+    // Transmit //
+    if(!driver->send(hu_protocol_buffer,HU_PROTOCOL_START_LENGTH+packet->length+1+offset)) return 1;  // Include LRC
+    if(blocking) if(!driver->waitPacketSent(HU_PROTOCOL_TIMEOUT)) return 2;
+
+    return 0;
+}
+
+int hu_protocol_calculate_LRC(hu_packet_t* packet)
+{
+    // Start
+    int i=0;
+    hu_protocol_buffer[i++]=packet->start;
+    hu_protocol_buffer[i++]=packet->length;
+    hu_protocol_buffer[i++]=packet->function;
+    hu_protocol_buffer[i++]=packet->source;
+    hu_protocol_buffer[i++]=packet->destination;
+
+    // Data
+    int data_len = packet->length-HU_PROTOCOL_LENGTH_NON_DATA;
+    for(int p=0;p<data_len;p++)
+    {
+        hu_protocol_buffer[i++]=packet->data[p];
+    }
+    
+    // End
+    hu_protocol_buffer[i++]=packet->end;
+    
+    // LRC
+    return get_LRC(hu_protocol_buffer, HU_PROTOCOL_START_LENGTH+packet->length);
+}
+
 // Returns the start position of the packet by finding start byte. Otherwise return -1 if no start is found.
 int hu_protocol_find_start_pos()
 {
@@ -307,6 +368,8 @@ void hu_protocol_MM_structToByteArray(const hu_protocol_SensorReadings &readings
   Serial.println();
   Serial.println();
 }
+
+// Written by Hayan Rafee
 
 void hu_protocol_MM_checkByteArray(byte* byteArray) {     //check function of het omzetten goed is gegaan
   // Retrieve the bytes from the byteArray    // de bytes array is pakket - (SoS + sours + dest + PL + LRC + FC)      

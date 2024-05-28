@@ -19,6 +19,10 @@ execs_function_t mainexecs[]=
     {"help", tm_exec_help, ""},
     {"redraw", tm_exec_redraw, "Redraws the screen"},
     {"gen", tm_exec_packet_generator_open, "Opens HU packet (gen)eration menu"},
+    {"send", tm_exec_packet_send_open, "Transmits a packet"},
+    {"getf", tm_exec_packet_getf, "gets a float in a data address"},
+    {"data", tm_exec_packet_data_open, "Opens the data editor for packets"},
+    {"view", tm_exec_packet_view, "views the last received packet"},
     {"", NULL, ""} // Terminator
 };
 
@@ -43,7 +47,7 @@ int tm_exec_help( String full_input )
         String command = mainexecs[i].name;
         command.toUpperCase();
         String desc = mainexecs[i].description;
-        tm_io.print(command+": \""+desc+"\"\n");
+        tm_io.print(command+":\""+desc+"\"\n");
     }
 }
 
@@ -51,12 +55,12 @@ int tm_exec_help( String full_input )
 
 void setup()
 {
+    delay(500);
     Serial.begin(9600);
     tm_sys.init();
     tm_rf.init();
     tm_io.init();
     tm_io.set_color(0b11111111);
-
     tm_io.print(F("Welcome\nEnter help to list commands\n"));
 }
 
@@ -79,8 +83,8 @@ void loop()
             tm_io.print("\nReturned " + String(err) + "\n");
         }
     }else{
-        tm_io.set_color(0b00011000);
-        tm_io.print(F("\nProgram exitted\n"));
+        //tm_io.set_color(0b00011000);
+        //tm_io.print(F("\nProgram exitted\n"));
     }
     tm_io.set_color(0b11111111);
     tm_sys.yield();
