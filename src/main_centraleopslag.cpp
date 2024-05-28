@@ -1,3 +1,5 @@
+#ifdef CENTRALE_OPSLAG
+
 #include <hu_protocol.h>
 #include <Arduino.h>
 #include <RH_ASK.h>
@@ -151,3 +153,5 @@ void SDtoLCD2(char ltr)
     lcd.clear();
     lcd.print(lcdText);
 }
+
+#endif
