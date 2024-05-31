@@ -3,18 +3,21 @@
 #include <Wire.h>
 #include <Adafruit_PN532.h>
 #include <LiquidCrystal_I2C.h>
+#include <hu_protocol.h>
 
 #define PN532_IRQ   (2)
 #define PN532_RESET (3)
 
 char MM = 0;
+RH_ASK rh_ask(500, 3, 11, 0, false);
 
 Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
 LiquidCrystal_I2C lcd(0x027, 16, 2);
 
-void route(char i);
-char kaartbepaler();
-void stapper();
+void nm_route(char i);
+void kaartbepaler();
+void CO_route(char i);
+int RF();
 
 byte arrow_up[] = 
 {
@@ -45,9 +48,11 @@ void setup(void)
   Serial.begin(115200);
   nfc.begin();
   lcd.init();
+  rh_ask.init();
   lcd.backlight();
   lcd.createChar(0, arrow_up);
   lcd.createChar(1, arrow_down);
+  //hu_protocol_set_address();
   uint32_t status = nfc.getFirmwareVersion();
   if (!status) {
     Serial.print("Geen bord gedetecteerd!");
@@ -63,7 +68,8 @@ void loop(void)
 {
   kaartbepaler();
 }
-char kaartbepaler()
+
+void kaartbepaler()
 {
 uint8_t startlocatie1[4] = {0x92, 0x83, 0x1B, 0xCC};
 uint8_t startlocatie2[4] = {0x1C, 0x31, 0xFC, 0x42};
@@ -121,14 +127,19 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie1, 4)== 0)
       {
         i=1;
-        route(i);
+        nm_route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie19, 4) == 0)
       {
         MM++;
         i=19;
-        route(i);
+        if (MM == 6)
+        {
+          CO_route(i);
+        }
+        else
+        nm_route(i);
         break;
       }
 
@@ -137,7 +148,12 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       {
         MM++;
         i=2;
-        route(i);
+        if (MM == 6)
+        {
+          CO_route(i);
+        }
+        else
+        nm_route(i);
         break;
       }
 
@@ -145,13 +161,13 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie3, 4)== 0)
       {
         i=3;
-        route(i);
+        nm_route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie6, 4)== 0)
       {
         i=6;
-        route(i);
+        nm_route(i);
         break;
       }
 
@@ -159,7 +175,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie4, 4)== 0)
       {
         i=4;
-        route(i);
+        nm_route(i);
         break;
       }
 
@@ -167,13 +183,13 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie5, 4)== 0)
       {
         i=5;
-        route(i);
+        nm_route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie18, 4) == 0)
       {
         i=18;
-        route(i);
+        nm_route(i);
         break;
       }
 
@@ -181,19 +197,19 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie7, 4)== 0)
       {
         i=7;
-        route(i);
+        nm_route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie10, 4)== 0)
       {
         i=10;
-        route(i);
+        nm_route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie22, 4)== 0)
       {
         i=22;
-        route(i);
+        nm_route(i);
         break;
       }
 
@@ -201,13 +217,13 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie8, 4)== 0)
       {
         i=8;
-        route(i);
+        nm_route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie12, 4)== 0)
       {
         i=12;
-        route(i);
+        nm_route(i);
         break;
       }
 
@@ -215,19 +231,19 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie9, 4)== 0)
       {
         i=9;
-        route(i);
+        nm_route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie17, 4)== 0)
       {
         i=17;
-        route(i);
+        nm_route(i);
         break;
       }
       if (memcmp(UID_tag, startlocatie23, 4)== 0)
       {
         i=23;
-        route(i);
+        nm_route(i);
         break;
       }
 
@@ -236,7 +252,12 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       {
         MM++;
         i=11;
-        route(i);
+        if (MM == 6)
+        {
+          CO_route(i);
+        }
+        else
+        nm_route(i);
         break;
       }
 
@@ -244,7 +265,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie13, 4)== 0)
       {
         i=13;
-        route(i);
+        nm_route(i);
         break;
       }
 
@@ -253,7 +274,12 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       {
         MM++;
         i=14;
-        route(i);
+        if (MM == 6)
+        {
+          CO_route(i);
+        }
+        else
+        nm_route(i);
         break;
       }
 
@@ -262,7 +288,12 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       {
         MM++;
         i=15;
-        route(i);
+        if (MM == 6)
+        {
+          CO_route(i);
+        }
+        else
+        nm_route(i);
         break;
       }
 
@@ -270,7 +301,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie16, 4)== 0)
       {
         i=16;
-        route(i);
+        nm_route(i);
         break;
       }
 
@@ -278,7 +309,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie20, 4)== 0)
       {
         i=20;
-        route(i);
+        nm_route(i);
         break;
       }
 
@@ -286,34 +317,46 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie21, 4)== 0)
       {
         i=21;
-        route(i);
+        nm_route(i);
         break;
       }
 
       case 0xF3:
       if (memcmp(UID_tag, testkaart1, 4)== 0)
       {
+        MM++;
         i=0;
-        route(i);
+        if (MM == 6)
+        {
+          CO_route(i);
+        }
+        else
+        nm_route(i);
         break;
       }
 
       case 0xA5:
       if (memcmp(UID_tag, testkaart2, 4)== 0)
       {
+        MM++;
         i=0;
-        route(i);
+        if (MM == 6)
+        {
+          CO_route(i);
+        }
+        else
+        nm_route(i);
         break;
       }
       default:
       i=0;
-      route(i);
+      nm_route(i);
       break;
     }
 }
 }
 
-void route(char i)
+void nm_route(char i)
 {
     lcd.setCursor(0,0);
     lcd.print("Route wordt");
@@ -445,12 +488,48 @@ void route(char i)
     break;
     
     default:
-    lcd.clear();
-    lcd.setCursor(0,0);
     lcd.print("ERROR:");
     lcd.setCursor(0,1);
     lcd.print("SYSTEEMFOUT!");
   }
+}
+
+void CO_route(char i)
+{
+  lcd.clear();
+  lcd.print("De route naar CO");
+  lcd.setCursor(0,1);
+  lcd.print("wordt geladen");
+  delay(3000);
+  lcd.clear();
+  switch (i)
+  {
+    case 0:
+    lcd.print("ROT OP");
+    break;
+
+    case 2:
+    break;
+
+    case 11:
+    break;
+
+    case 14:
+    break;
+
+    case 15:
+    break;
+
+    case 19:
+    break;
+  }
+}
+
+int RF()
+{
+hu_packet_t packet;
+hu_prot_receive_err_t hu_protocolol_recieve(RH_ASK* driver, hu_packet_t* packet);
+uint8_t data = packet.function;
 }
 #endif
 
