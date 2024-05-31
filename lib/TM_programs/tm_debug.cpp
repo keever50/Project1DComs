@@ -46,7 +46,7 @@ void tm_prog_receiver_print_data(hu_packet_t& packet)
     }
 
     uint8_t row=0;
-    for(uint8_t i=0;i<packet.length;i++)
+    for(uint8_t i=0;i<packet.length-4;i++)
     {
         memset(buff, 0, sizeof(buff));
         uint8_t D=packet.data[i];
