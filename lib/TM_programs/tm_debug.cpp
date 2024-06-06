@@ -315,6 +315,185 @@ int tm_exec_packet_send_open( String full_command )
     return 0;
 }
 
+int _tm_exec_state_send( hu_packet_t &packet )
+{
+    tm_io.print(F("Sending packet"));   
+    int err = hu_protocol_transmit_manual(tm_rf.get_driver(), &packet, false, true);
+    if(err)
+    {
+        tm_io.print("\nTransmit error\n");
+        return 1;
+    }
+    uint8_t lcount=0;
+    while(tm_rf.get_mode()==RHGenericDriver::RHModeTx)
+    {
+        // Prevent new lines from rendering. These take too long
+        if(lcount<15)
+        {
+            tm_io.print(F(">"));   
+            lcount++;
+            delay(50);
+        }
+
+    }      
+    
+    return 0;
+}
+
+// Return 0 on success, 1 on timeout, 2 on packet error
+int _tm_exec_state_wait_receive(uint8_t src)
+{
+    hu_prot_receive_err_t ret;
+    unsigned long start_time=millis();
+
+    // Attempt to read till packet received
+    for(;;)
+    {
+        tm_sys.yield();
+        // Time out
+        if(millis()-start_time>=TM_TRANSFLOW_RECEIVE_TIMEOUT) return TM_TRANSFLOW_RECEIVE_TIMEOUT_ERR;
+
+        // Receive and check if we are still listening. (Listening means no packet)
+        ret = hu_protocol_receive(tm_rf.get_driver(), &debug_packetbuffer_receive);
+        if(ret != HU_PROT_RECEIVE_LISTENING && ret != HU_PROT_RECEIVE_IGNORE) break;
+
+        // Report traffic
+        if( ret == HU_PROT_RECEIVE_IGNORE )
+        {
+            tm_io.print("\nwrong dest\n");
+            memset(&debug_packetbuffer_receive,0,sizeof(debug_packetbuffer_receive));
+        }
+
+        else if(debug_packetbuffer_receive.source != src && ret != HU_PROT_RECEIVE_LISTENING)
+        {
+            tm_io.print("\nwrong src\n");  
+            memset(&debug_packetbuffer_receive,0,sizeof(debug_packetbuffer_receive));         
+        }
+    }
+    
+    // Check if the packet received successfully
+    if(ret != HU_PROT_RECEIVE_RECEIVED) return TM_TRANSFLOW_RECEIVE_CORRUPT_ERR;
+
+    return 0;
+
+}
+
+int tm_exec_packet_send_full_open( String full_command )
+{
+    hu_packet_t retranspacket;
+    memset(&retranspacket, 0, sizeof(retranspacket));
+    retranspacket.function=HU_PROTOCOL_FUNCTION_RETRANSMIT;
+    retranspacket.start=HU_PROTOCOL_START_BYTE;
+    retranspacket.end=HU_PROTOCOL_END_BYTE;
+    retranspacket.length=HU_PROTOCOL_LENGTH_NON_DATA;
+
+
+    uint8_t retry=1;
+    int err=0;
+    const uint8_t state_start=0;
+    const uint8_t state_wait_rec=1;
+    const uint8_t state_wait_ack=1;
+    const uint8_t state_retrans=2;
+    const uint8_t state_retry=3;
+    const uint8_t state_done=4;
+    uint8_t state=state_start;
+    for(;;)
+    {
+        tm_sys.yield();
+
+        switch(state)
+        {
+            // Start transmission
+            case state_start:
+            {
+                err = _tm_exec_state_send(debug_packetbuffer);
+                if(err)
+                {
+                    return 1;
+                }
+                state = state_wait_ack;
+                break;
+            }
+
+            // Receive acknowledge
+            case state_wait_rec:
+            {
+                tm_io.print(F("Ack?"));  
+                memset(&debug_packetbuffer_receive,0,sizeof(debug_packetbuffer_receive));
+                err = _tm_exec_state_wait_receive(debug_packetbuffer.source);
+                tm_io.print(F("\n"));  
+                // When ack timed out
+                if(err == TM_TRANSFLOW_RECEIVE_TIMEOUT_ERR)
+                {
+                    tm_io.print(F("Timed out\n"));   
+                    state = state_retry;
+                    break;
+                
+                // When ack is corrupted. Send retransmission request
+                }else if(err == TM_TRANSFLOW_RECEIVE_CORRUPT_ERR)
+                {
+                    tm_io.print(F("Corrupted\n"));   
+                    state = state_retrans;
+                    break;                    
+                }
+
+                // When ack is retrans
+                else if(debug_packetbuffer_receive.function==HU_PROTOCOL_FUNCTION_RETRANSMIT)
+                {
+                    tm_io.print(F("Retransmission\n"));   
+                    state = state_retry;
+                    break;
+                }
+
+                // Check if ack has function ack 
+                else if(debug_packetbuffer_receive.function==HU_PROTOCOL_FUNCTION_ACKNOWLEDGE)
+                {
+                    tm_io.print(F("Acknowledged\n"));   
+                    state = state_done;
+                    break;
+                }
+
+                // Otherwise unexpected
+                else{
+                    tm_io.print(F("Unexpected packet\n"));   
+                    state = state_retry;
+                    break;                    
+                }
+
+                return 1;
+            }
+
+            case state_retrans:
+            {
+                if(retry>=TM_TRANSFLOW_RECEIVE_RETRIES) return 1;
+                tm_io.print(F("Retry(Retrans)\n"));  
+                retranspacket.destination=debug_packetbuffer.destination;
+                retranspacket.source=debug_packetbuffer.source;
+                err = _tm_exec_state_send(retranspacket);
+                if(err) return 1;
+                retry++;
+                state = state_wait_rec;
+
+                break;
+            }
+
+            case state_retry:
+            {
+                if(retry>=TM_TRANSFLOW_RECEIVE_RETRIES) return 1;
+                tm_io.print(F("Retry\n"));  
+                retry++;
+                state = state_start;
+                break;
+            }
+
+            case state_done:
+            {
+                tm_io.print(F("Success\n"));   
+                return 0;
+            }
+        }
+    }
+}
 
 int tm_exec_packet_data_open( String full_command )
 {

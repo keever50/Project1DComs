@@ -16,7 +16,6 @@
 #define TM_BLACK 0
 #define TM_BLUE 0b00000111
 
-
 void tm_test_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli);
 void tm_demo_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli);
 void tm_draw_cli(TFT_22_ILI9225& tft, cli_terminal_t& cli);

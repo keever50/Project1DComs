@@ -5,12 +5,14 @@
 #include <execs.h>
 #include <RH_ASK.h>
 #include <tm_sys.h>
+#include <avr/sleep.h>
 
 //Programs
 #include <tm_debug.h>
 int Etest( String full_input );
 int tm_exec_help( String full_input );
 int tm_exec_redraw( String full_input );
+int tm_exec_sleep( String full_input );
 execs_function_t mainexecs[]=
 {
     {"test", Etest, "TEST"},
@@ -23,8 +25,21 @@ execs_function_t mainexecs[]=
     {"getf", tm_exec_packet_getf, "gets a float in a data address"},
     {"data", tm_exec_packet_data_open, "Opens the data editor for packets"},
     {"view", tm_exec_packet_view, "views the last received packet"},
+    {"sendf", tm_exec_packet_send_full_open, "Send full transmission flow"},
+    {"sleep", tm_exec_sleep, "Sleeps the device"},
     {"", NULL, ""} // Terminator
 };
+
+int tm_exec_sleep( String full_input )
+{
+    tm_io.brightness(0);
+    digitalWrite(LED_BUILTIN,LOW);
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    wdt_disable();
+    sleep_mode();
+    wdt_enable(WDTO_2S);
+    tm_io.brightness(255);
+}
 
 int tm_exec_redraw( String full_input )
 {
@@ -62,6 +77,8 @@ void setup()
     tm_io.init();
     tm_io.set_color(0b11111111);
     tm_io.print(F("Welcome\nEnter help to list commands\n"));
+
+    hu_protocol_set_address(hu_protocol_encode_address("2AG3TM"));
 }
 
 void loop()
