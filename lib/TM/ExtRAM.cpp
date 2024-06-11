@@ -7,6 +7,17 @@
 
 #include <ExtRAM.h>
 
+void ExtRAM::set_bytes(uint16_t start, uint8_t value, uint16_t count )
+{
+  set_cs(true);
+  write_address(start);
+  for(uint16_t i=0;i<count;i++)
+  {
+    write(value);
+  }
+  set_cs(false);  
+}
+
 void ExtRAM::write_address(uint16_t address)
 {
   SPI.beginTransaction(SPISettings(RAM_SPEED, true, SPI_MODE0));
@@ -53,6 +64,7 @@ int ExtRAM::set_mode(uint8_t mode)
 {
   // Set
   set_cs(true);
+  delay(2);
   write_reg(EXTRAM_REG_WRMR, mode);
   set_cs(false);
 
@@ -60,6 +72,7 @@ int ExtRAM::set_mode(uint8_t mode)
 
   // Read and verifiy
   set_cs(true);
+  delay(2);
   uint8_t read = read_reg(EXTRAM_REG_RDMR);
   set_cs(false);
 
@@ -136,6 +149,12 @@ void ExtRAM::read_bytes(uint16_t address, uint8_t* destination, uint16_t count)
   set_cs(false);
 }
 
+void ExtRAM::reset()
+{
+  set_cs(true);
+  write(EXTRAM_REG_RSTIO);
+  set_cs(false);
+}
 
 ExtRAM extram;
 

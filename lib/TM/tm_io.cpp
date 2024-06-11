@@ -60,22 +60,19 @@ void Tm_io::init()
     pinMode(RAM_CS, OUTPUT);
     delay(50);
     // Set mode
+    extram.reset();
     extram.set_mode(EXTRAM_MODE_SEQ);
 
-    // Clean out ext ram section
-    for(uint16_t i=RAM_SECT_GRAPHICS_START;i<RAM_SECT_GRAPHICS_END;i++)
-    {
-      extram.write_byte(i, ' ');
-    }
-    // Clean out the persistance section
-    for(uint16_t i=RAM_SECT_PERSISTANCE_START;i<RAM_SECT_PERSISTANCE_END;i++)
-    {
-      extram.write_byte(i, ' ');
-    }
+    // Clean out ext ram graphic section
+    extram.set_bytes(RAM_SECT_GRAPHICS_START,0,RAM_SECT_GRAPHICS_END-RAM_SECT_GRAPHICS_START);
+    extram.set_bytes(RAM_SECT_GRAPHICS_START,0,RAM_SECT_GRAPHICS_END-RAM_SECT_GRAPHICS_START);
+    // Clean out ext ram persistance graphic section
+    extram.set_bytes(RAM_SECT_PERSISTANCE_START,0,RAM_SECT_PERSISTANCE_END-RAM_SECT_PERSISTANCE_START);
+    extram.set_bytes(RAM_SECT_PERSISTANCE_START,0,RAM_SECT_PERSISTANCE_END-RAM_SECT_PERSISTANCE_START);
+
     delay(10);
     // TFT init
     tft.begin();
-    delay(10);
     tft.clear();
     
     tft.setFont(Terminal6x8);
@@ -173,12 +170,14 @@ void Tm_io::redraw()
 {
   // Clean TFT
   tft.clear();
-  // Clean out the persistance section
-  for(uint16_t i=RAM_SECT_PERSISTANCE_START;i<RAM_SECT_PERSISTANCE_END;i++)
-  {
-    extram.write_byte(i, 'X');
-  }
+  // Clean out the persistance graphical section
+  extram.set_bytes(RAM_SECT_PERSISTANCE_START, 0, RAM_SECT_PERSISTANCE_END-RAM_SECT_PERSISTANCE_START);
   flush();
+}
+
+void Tm_io::brightness(uint8_t bright)
+{
+  tft.setBacklightBrightness(bright);
 }
 
 Tm_io tm_io;

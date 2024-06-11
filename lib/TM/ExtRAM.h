@@ -38,6 +38,9 @@ public:
     // Reads multiple bytes starting from a 16-bit address
     void read_bytes(uint16_t address, uint8_t* destination, uint16_t count);
 
+    void set_bytes(uint16_t start, uint8_t value, uint16_t count );
+
+    void reset();
 
 private:
     void write(uint8_t byte); 
@@ -52,6 +55,7 @@ private:
     void read_address(uint16_t address);
     // Reads a register
     uint8_t read_reg(uint8_t reg);
+
 };
 
 extern ExtRAM extram;

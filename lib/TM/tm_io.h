@@ -26,6 +26,7 @@ public:
     void set_auto_flush( bool on ) {auto_flush=on;};
     void flush();
     void redraw();
+    void brightness(uint8_t bright);
 private:
     bool auto_flush=true;
 };

@@ -26,7 +26,7 @@
 #define TFT_CLK 52  // SCK
 #define TFT_LED 47   // Backlight
 // Settings
-#define TFT_BRIGHTNESS 200 // Initial brightness of TFT backlight
+#define TFT_BRIGHTNESS 250 // Initial brightness of TFT backlight
 
 /****************
     TERMINAL
@@ -44,7 +44,7 @@
 #define RAM_MOSI TFT_SDI
 #define RAM_MISO 50
 #define RAM_CLK TFT_CLK
-#define RAM_SPEED 4000000
+#define RAM_SPEED 6000000
 
 // Layout
 #define RAM_SECT_GRAPHICS_START 0
