@@ -325,7 +325,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, testkaart1, 4)== 0)
       {
         MM++;
-        i=0;
+        i=1;
         if (MM == 6)
         {
           CO_route(i);
