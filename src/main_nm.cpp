@@ -7,8 +7,12 @@
 
 #define PN532_IRQ   (2)
 #define PN532_RESET (3)
+#define red_pin (8)
+#define yellow_pin (9)
+#define green_pin (10)
 
 char MM = 0;
+char flag = 0;
 RH_ASK rh_ask(500, 3, 11, 0, false);
 
 Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
@@ -17,7 +21,8 @@ LiquidCrystal_I2C lcd(0x027, 16, 2);
 void nm_route(char i);
 void kaartbepaler();
 void CO_route(char i);
-int RF();
+void RF_nm_send();
+int RF_nm_receive();
 
 byte arrow_up[] = 
 {
@@ -52,7 +57,10 @@ void setup(void)
   lcd.backlight();
   lcd.createChar(0, arrow_up);
   lcd.createChar(1, arrow_down);
-  //hu_protocol_set_address();
+  hu_protocol_set_address(0x4C);
+  pinMode(red_pin, OUTPUT);
+  pinMode(yellow_pin, OUTPUT);
+  pinMode(green_pin, OUTPUT);
   uint32_t status = nfc.getFirmwareVersion();
   if (!status) {
     Serial.print("Geen bord gedetecteerd!");
@@ -66,6 +74,7 @@ void setup(void)
 
 void loop(void)
 {
+  digitalWrite(red_pin, HIGH);
   kaartbepaler();
 }
 
@@ -134,6 +143,10 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       {
         MM++;
         i=19;
+        RF_nm_send();
+        RF_nm_receive();
+        if (flag == 1)
+        {
         if (MM == 6)
         {
           CO_route(i);
@@ -141,6 +154,9 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         else
         nm_route(i);
         break;
+        }
+        else
+        lcd.print("ERROR");
       }
 
       case 0x1C:
@@ -148,6 +164,10 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       {
         MM++;
         i=2;
+        RF_nm_send();
+        RF_nm_receive();
+        if (flag == 1)
+        {
         if (MM == 6)
         {
           CO_route(i);
@@ -155,6 +175,9 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         else
         nm_route(i);
         break;
+        }
+        else
+        lcd.print("ERROR");
       }
 
       case 0x02:
@@ -252,6 +275,10 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       {
         MM++;
         i=11;
+        RF_nm_send();
+        RF_nm_receive();
+        if (flag == 1)
+        {
         if (MM == 6)
         {
           CO_route(i);
@@ -259,6 +286,9 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         else
         nm_route(i);
         break;
+        }
+        else
+        lcd.print("ERROR");
       }
 
       case 0x12:
@@ -274,6 +304,10 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       {
         MM++;
         i=14;
+        RF_nm_send();
+        RF_nm_receive();
+        if (flag == 1)
+        {
         if (MM == 6)
         {
           CO_route(i);
@@ -281,6 +315,9 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         else
         nm_route(i);
         break;
+        }
+        else
+        lcd.print("ERROR");
       }
 
       case 0xE2:
@@ -288,6 +325,10 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       {
         MM++;
         i=15;
+        RF_nm_send();
+        RF_nm_receive();
+        if (flag == 1)
+        {
         if (MM == 6)
         {
           CO_route(i);
@@ -295,6 +336,9 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         else
         nm_route(i);
         break;
+        }
+        else
+        lcd.print("ERROR");
       }
 
       case 0xFC:
@@ -325,7 +369,11 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, testkaart1, 4)== 0)
       {
         MM++;
-        i=1;
+        i=0;
+        RF_nm_send();
+        RF_nm_receive();
+        if (flag == 1)
+        {
         if (MM == 6)
         {
           CO_route(i);
@@ -333,6 +381,12 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         else
         nm_route(i);
         break;
+        }
+        else
+        {
+        lcd.print("ERROR");
+        delay(3000);
+        }
       }
 
       case 0xA5:
@@ -340,6 +394,10 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       {
         MM++;
         i=0;
+        RF_nm_send();
+        RF_nm_receive();
+        if (flag == 1)
+        {
         if (MM == 6)
         {
           CO_route(i);
@@ -347,6 +405,12 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         else
         nm_route(i);
         break;
+        }
+        else
+        {
+        lcd.print("ERROR");
+        delay(3000);
+        }
       }
       default:
       i=0;
@@ -525,11 +589,48 @@ void CO_route(char i)
   }
 }
 
-int RF()
+void RF_nm_send()
 {
+digitalWrite(yellow_pin, HIGH);
+uint8_t functie = 0xE7;
 hu_packet_t packet;
-hu_prot_receive_err_t hu_protocolol_recieve(RH_ASK* driver, hu_packet_t* packet);
-uint8_t data = packet.function;
+packet.start=HU_PROTOCOL_START_BYTE;
+packet.end=HU_PROTOCOL_END_BYTE;
+packet.function= functie;
+packet.data[0]= 12;
+packet.length= HU_PROTOCOL_LENGTH_NON_DATA + 1;
+packet.destination = 0x2C;
+packet.source = 0x4C;
+
+lcd.print("Sending");
+hu_protocol_transmit(&rh_ask, &packet);
+delay(1000);
+digitalWrite(yellow_pin, LOW);
+}
+
+int RF_nm_receive()
+{
+lcd.clear();
+lcd.print("Receiving");
+digitalWrite(green_pin, HIGH);
+hu_packet_t packet;
+hu_prot_receive_err_t err = hu_protocol_receive(&rh_ask, &packet);
+delay(1000);
+uint8_t functiecode = packet.function;
+if (err == HU_PROT_RECEIVE_RECEIVED)
+{
+  switch (functiecode)
+  {
+    case 0xEC:
+    flag=1;
+    break;
+
+    default:
+    flag=0;
+  }
+}
+digitalWrite(green_pin, LOW);
+lcd.clear();
 }
 #endif
 
