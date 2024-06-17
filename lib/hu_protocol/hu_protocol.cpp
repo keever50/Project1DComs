@@ -189,13 +189,13 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t* packet)
     }
 
 
-    if(packet->function>HU_PROTOCOL_FUNCTION_RANGE)
-    {
-        Serial.print(F("receive packet error: unknown function ["));
-        Serial.print(packet->function);
-        Serial.println("]");
-        return HU_PROT_RECEIVE_UNKNOWN_FUNCTION;
-    }
+    // if(packet->function>HU_PROTOCOL_FUNCTION_RANGE)
+    // {
+    //     Serial.print(F("receive packet error: unknown function ["));
+    //     Serial.print(packet->function);
+    //     Serial.println("]");
+    //     return HU_PROT_RECEIVE_UNKNOWN_FUNCTION;
+    // }
 
     // Transfer the data. This transfers nothing when length is the minimum packet length.
     int data_length = packet->length-HU_PROTOCOL_LENGTH_NON_DATA;
