@@ -63,13 +63,12 @@ void setup(void)
   pinMode(green_pin, OUTPUT);
   uint32_t status = nfc.getFirmwareVersion();
   if (!status) {
-    Serial.print("Geen bord gedetecteerd!");
     while (1);
   }
   lcd.setCursor(0,0);
-  lcd.print("Scan een");
+  lcd.print(F("Scan een"));
   lcd.setCursor(0, 1);
-  lcd.print("kaart:");
+  lcd.print(F("kaart:"));
 }
 
 void loop(void)
@@ -117,18 +116,9 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
   if (UID)
   {
     lcd.clear();
-    lcd.print("Kaart gescand");
+    lcd.print(F("Kaart gescand"));
     delay(2000);
     lcd.clear();
-    Serial.println("De gevonde UID is:");
-
-    for (uint8_t j=0; j<UIDLengte; j++)
-    {
-      Serial.print("0x");
-      Serial.print(UID_tag[j], HEX);
-      Serial.print(" ");
-    }
-    Serial.println("");
 
     switch (UID_tag[0])
     {
@@ -156,7 +146,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         break;
         }
         else
-        lcd.print("ERROR");
+        lcd.print(F("ERROR"));
       }
 
       case 0x1C:
@@ -177,7 +167,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         break;
         }
         else
-        lcd.print("ERROR");
+        lcd.print(F("ERROR"));
       }
 
       case 0x02:
@@ -288,7 +278,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         break;
         }
         else
-        lcd.print("ERROR");
+        lcd.print(F("ERROR"));
       }
 
       case 0x12:
@@ -317,7 +307,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         break;
         }
         else
-        lcd.print("ERROR");
+        lcd.print(F("ERROR"));
       }
 
       case 0xE2:
@@ -338,7 +328,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         break;
         }
         else
-        lcd.print("ERROR");
+        lcd.print(F("ERROR"));
       }
 
       case 0xFC:
@@ -384,7 +374,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         }
         else
         {
-        lcd.print("ERROR");
+        lcd.print(F("ERROR"));
         delay(3000);
         }
       }
@@ -396,7 +386,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         i=0;
         RF_nm_send();
         RF_nm_receive();
-        if (flag == 1)
+        if (flag==1)
         {
         if (MM == 6)
         {
@@ -406,15 +396,10 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         nm_route(i);
         break;
         }
-        else
-        {
-        lcd.print("ERROR");
-        delay(3000);
-        }
       }
       default:
-      i=0;
-      nm_route(i);
+      lcd.setCursor(0,1);
+      lcd.print(F("probeer opnieuw"));
       break;
     }
 }
@@ -423,168 +408,309 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
 void nm_route(char i)
 {
     lcd.setCursor(0,0);
-    lcd.print("Route wordt");
+    lcd.print(F("Route wordt"));
     lcd.setCursor(0,1);
-    lcd.print("berekend.....");
+    lcd.print(F("berekend....."));
     delay(3000);
     lcd.clear();
     lcd.setCursor(0,0);
-    lcd.print("Route gevonden!");
+    lcd.print(F("Route gevonden!"));
     delay(1000);
     lcd.clear();
   switch (i)
   {
     case 0:
-    lcd.print("geen geldige");
+    lcd.print(F("geen geldige"));
     lcd.setCursor(0,1);
-    lcd.print("route gevonden");
+    lcd.print(F("route gevonden"));
     break;
 
     case 1:
-    lcd.print("2");
+    lcd.print(F("2"));
     lcd.write(1);
-    lcd.print(" 9");
+    lcd.print(F(" 9"));
     lcd.write(0x7E);
-    lcd.print(" 3");
+    lcd.print(F(" 3"));
     lcd.write(0x7F);
     break;
 
     case 2:
-    lcd.print("1");
+    lcd.print(F("2"));
     lcd.write(1);
-    lcd.print(" 44");
-    lcd.write(0x7E);
-    lcd.print(" 11");
-    lcd.write(0x7E);
+    lcd.print(F(" 41"));
+    lcd.write(0x7F);
+    lcd.print(F(" 32"));
+    lcd.write(0x7F);
+    lcd.print(F(" 6"));
+    lcd.write(0x7F);
     break;
 
     case 3:
-    lcd.print("1");
+    lcd.print(F("1"));
     lcd.write(1);
-    lcd.print(" 5");
+    lcd.print(F(" 5"));
     lcd.write(0x7E);
-    lcd.print(" 1");
+    lcd.print(F(" 1"));
     lcd.write(0x7E);
     break;
 
     case 4:
-    lcd.print("1");
+    lcd.print(F("1"));
     lcd.write(1);
-    lcd.print(" 12");
+    lcd.print(F(" 12"));
     lcd.write(0x7E);
-    lcd.print(" 1");
+    lcd.print(F(" 1"));
     lcd.write(0x7E);
     break;
 
     case 5:
-    lcd.print("1");
+    lcd.print(F("1"));
     lcd.write(1);
-    lcd.print(" 19");
+    lcd.print(F(" 19"));
     lcd.write(0x7E);
-    lcd.print(" 1");
+    lcd.print(F(" 1"));
     lcd.write(0x7E);
     break;
 
     case 6:
-    lcd.print("1");
+    lcd.print(F("1"));
     lcd.write(1);
-    lcd.print(" 28");
+    lcd.print(F(" 28"));
     lcd.write(0x7E);
-    lcd.print(" 1");
+    lcd.print(F(" 1"));
     lcd.write(0x7E);
     break;
 
     case 7:
-    lcd.print("1");
+    lcd.print(F("1"));
     lcd.write(1);
-    lcd.print(" 32");
+    lcd.print(F(" 32"));
     lcd.write(0x7E);
-    lcd.print(" 1");
+    lcd.print(F(" 1"));
     lcd.write(0x7E);
     break;
 
     case 8:
+    lcd.print(F("1"));
+    lcd.write(0x7E);
+    lcd.print(F(" 9"));
+    lcd.write(0x7E);
+    lcd.print(F(" 5"));
+    lcd.write(0x7E);
+    lcd.print(F(" 20"));
+    lcd.write(0x7F);
+    lcd.setCursor(0,1);
+    lcd.print(F("5"));
+    lcd.write(0x7F);
     break;
 
     case 9:
+    lcd.print(F("4"));
+    lcd.write(0x7F);
+    lcd.print(F(" 20"));
+    lcd.write(0x7F);
+    lcd.print(F(" 5"));
+    lcd.write(0x7F);
     break;
 
     case 10:
+    lcd.print(F("1"));
+    lcd.write(1);
+    lcd.print(F(" 2"));
+    lcd.write(0x7E);
+    lcd.print(F(" 16"));
+    lcd.write(0x7F);
+    lcd.print(F(" 5"));
+    lcd.write(0x7F);
     break;
 
     case 11:
+    lcd.print(F("5"));
+    lcd.write(1);
+    lcd.print(F(" 21"));
+    lcd.write(0x7E);
+    lcd.print(F("8"));
+    lcd.write(0x7F);
+    lcd.print(F(" 8"));
+    lcd.write(0x7E);
     break;
 
     case 12:
+    lcd.print(F("7"));
+    lcd.write(1);
     break;
 
     case 13:
+    lcd.print(F("2"));
+    lcd.write(1);
+    lcd.print(F(" 13"));
+    lcd.write(0x7E);
     break;
 
     case 14:
+    lcd.print(F("9"));
+    lcd.write(1);
+    lcd.print(F(" 7"));
+    lcd.write(0x7F);
+    lcd.print(F(" 10"));
+    lcd.write(0x7F);
+    lcd.print(F(" 28"));
+    lcd.write(0x7F);
+    lcd.setCursor(0,1);
+    lcd.print(F("2"));
+    lcd.write(0x7F);
+    lcd.print(F(" 6"));
+    lcd.write(0x7F);
     break;
 
     case 15:
+    lcd.print(F("6"));
+    lcd.write(1);
+    lcd.print(F(" 5"));
+    lcd.write(0x7E);
+    lcd.print(F(" 29"));
+    lcd.write(0x7E);
+    lcd.print(F(" 8"));
+    lcd.write(0x7F);
     break;
 
     case 16:
+    lcd.print(F("2"));
+    lcd.write(0);
+    lcd.print(F(" 6"));
+    lcd.write(0x7F);
     break;
 
     case 17:
+    lcd.print(F("10"));
+    lcd.write(1);
+    lcd.print(F(" 10"));
+    lcd.write(0x7F);
+    lcd.print(F(" 3"));
+    lcd.write(0x7E);
+    lcd.print(F(" 6"));
+    lcd.write(0x7F);
     break;
 
     case 18:
+    lcd.print(F("11"));
+    lcd.write(1);
+    lcd.print(F(" 5"));
+    lcd.write(0x7E);
+    lcd.print(F(" 3"));
+    lcd.write(0x7F);
+    lcd.print(F(" 6"));
+    lcd.write(0x7F);
     break;
 
     case 19:
+    lcd.print(F("10"));
+    lcd.write(1);
+    lcd.print(F(" 41"));
+    lcd.write(0x7E);
+    lcd.print(F(" 2"));
+    lcd.write(0x7E);
     break;
 
     case 20:
+    lcd.print(F("11"));
+    lcd.write(0x7F);
     break;
 
     case 21:
+    lcd.print(F("2"));
+    lcd.write(0x7F);
+    lcd.print(F(" 10"));
+    lcd.write(0x7E);
+    lcd.print(F(" 3"));
+    lcd.write(0x7E);
+    lcd.print(" 6");
+    lcd.write(0x7F);
     break;
 
     case 22:
+    lcd.print(F("18"));
+    lcd.write(1);
+    lcd.print(F(" 4"));
+    lcd.write(0x7E);
+    lcd.print(F(" 6"));
+    lcd.write(0x7F);
     break;
 
     case 23:
+    lcd.print(F("12"));
+    lcd.write(1);
+    lcd.print(F(" 17"));
+    lcd.write(0x7F);
+    lcd.print(F(" 4"));
+    lcd.write(0x7E);
+    lcd.print(F(" 6"));
+    lcd.write(0x7F);
     break;
     
     default:
-    lcd.print("ERROR:");
+    lcd.print(F("ERROR:"));
     lcd.setCursor(0,1);
-    lcd.print("SYSTEEMFOUT!");
+    lcd.print(F("SYSTEEMFOUT!"));
   }
 }
 
 void CO_route(char i)
 {
   lcd.clear();
-  lcd.print("De route naar CO");
+  lcd.print(F("De route naar CO"));
   lcd.setCursor(0,1);
-  lcd.print("wordt geladen");
+  lcd.print(F("wordt geladen"));
   delay(3000);
   lcd.clear();
   switch (i)
   {
-    case 0:
-    lcd.print("ROT OP");
-    break;
-
     case 2:
+    lcd.print(F("2"));
+    lcd.write(1);
+    lcd.print(F(" 41"));
+    lcd.write(0x7F);
+    lcd.print(F(" 13"));
+    lcd.write(0x7F);
+    lcd.print(F(" 4"));
+    lcd.write(0x7F);
     break;
 
     case 11:
+    lcd.print(F("6"));
+    lcd.write(1);
+    lcd.print(F(" 20"));
+    lcd.write(0x7E);
+    lcd.print(F(" 4"));
+    lcd.write(0x7E);
     break;
 
     case 14:
+    lcd.print(F("9"));
+    lcd.write(1);
+    lcd.print(F(" 11"));
+    lcd.write(0x7F);
     break;
 
     case 15:
+    lcd.print(F("6"));
+    lcd.write(1);
+    lcd.print(F(" 4"));
+    lcd.write(0x7E);
+    lcd.print(F(" 28"));
+    lcd.write(0x7E);
+    lcd.print(F(" 9"));
+    lcd.write(0x7E);
+    lcd.setCursor(0, 1);
+    lcd.print(F(" 4"));
+    lcd.write(0x7F);
     break;
 
     case 19:
+    lcd.print(F("24"));
+    lcd.write(1);
+    lcd.print(F(" 4"));
+    lcd.write(0x7F);
     break;
   }
 }
@@ -602,7 +728,7 @@ packet.length= HU_PROTOCOL_LENGTH_NON_DATA + 1;
 packet.destination = 0x2C;
 packet.source = 0x4C;
 
-lcd.print("Sending");
+lcd.print(F("Sending"));
 hu_protocol_transmit(&rh_ask, &packet);
 delay(1000);
 digitalWrite(yellow_pin, LOW);
@@ -611,7 +737,7 @@ digitalWrite(yellow_pin, LOW);
 int RF_nm_receive()
 {
 lcd.clear();
-lcd.print("Receiving");
+lcd.print(F("Receiving"));
 digitalWrite(green_pin, HIGH);
 hu_packet_t packet;
 hu_prot_receive_err_t err = hu_protocol_receive(&rh_ask, &packet);
