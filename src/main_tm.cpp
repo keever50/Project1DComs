@@ -27,6 +27,8 @@ execs_function_t mainexecs[] =
         {"view", tm_exec_packet_view, "views the last received packet"},
         {"sendf", tm_exec_packet_send_full_open, "Send full transmission flow"},
         {"sleep", tm_exec_sleep, "Sleeps the device"},
+        {"sendrec", tm_exec_packet_sendrec_open, "sends and receives"},
+        {"recsend", tm_exec_packet_recsend, "receives and sends"},
         {"", NULL, ""} // Terminator
 };
 
@@ -56,26 +58,31 @@ int Etest(String full_input)
 
 int tm_exec_help(String full_input)
 {
+    tm_io.set_auto_flush(false);
     for (int i = 0;; i++)
     {
         if (mainexecs[i].function == NULL)
-            return 0;
+            break;
         String command = mainexecs[i].name;
         command.toUpperCase();
         String desc = mainexecs[i].description;
         tm_io.print(command + ":\"" + desc + "\"\n");
     }
+    tm_io.set_auto_flush(true);
+    tm_io.flush();
+    return 0;
 }
 
 void setup()
 {
     delay(500);
-    Serial.begin(9600);
+    Serial.begin(SER_BAUD);
     tm_sys.init();
     tm_rf.init();
     tm_io.init();
     tm_io.set_color(0b11111111);
     tm_io.print(F("Welcome\nEnter help to list commands\n"));
+    tm_io.print("Connect to a serial monitor on\n" + String(SER_BAUD) + " baud for easier control\n");
 
     hu_protocol_set_address(hu_protocol_encode_address("2AG3TM"));
 }
