@@ -1,0 +1,76 @@
+<mxfile host="app.diagrams.net" modified="2024-06-18T19:59:04.314Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0" etag="ZBbqrak0N9ah7cpMbvMe" version="24.5.2" type="device">
+  <diagram name="Page-1" id="u_PrvVuxzSZM_HpJyD2q">
+    <mxGraphModel dx="2074" dy="1134" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1654" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--31" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="95" y="200" width="980" height="570" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--17" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="105" y="280" width="960" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--16" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="105" y="520" width="960" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--15" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="105" y="400" width="960" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--1" value="Command line" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="355" y="300" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--2" value="&lt;div&gt;display.h&lt;/div&gt;&lt;div&gt;Rendering&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="265" y="420" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--4" value="io.h&lt;br&gt;Standard I/O&lt;br&gt;Printing" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="465" y="420" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--5" value="&lt;div&gt;rf.h&lt;/div&gt;&lt;div&gt;RF control&lt;/div&gt;&lt;div&gt;Sending&amp;amp;Receiving&lt;/div&gt;&lt;div&gt;Debug&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="665" y="420" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--6" value="&lt;div&gt;sys.h&lt;/div&gt;&lt;div&gt;watchdog control&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="865" y="420" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--7" value="&lt;div&gt;ExtRAM.h&lt;br&gt;SPI SRAM driver&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="565" y="540" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--8" value="RH_ASK.h&lt;br&gt;Radiohead RF library&lt;br&gt;(Third party)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="765" y="540" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--9" value="&lt;div&gt;TFT_22_ILI9225.h&lt;/div&gt;&lt;div&gt;Display driver&lt;br&gt;(Third party)&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="365" y="540" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--18" value="Debugging tools" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="555" y="300" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--19" value="Utility" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="755" y="300" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--22" value="&lt;b style=&quot;font-size: 19px;&quot;&gt;Application layer &quot;user space&quot;&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=19;" vertex="1" parent="1">
+          <mxGeometry x="115" y="290" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--24" value="&lt;b&gt;System layer&lt;br&gt;&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=19;" vertex="1" parent="1">
+          <mxGeometry x="115" y="410" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--25" value="&lt;b&gt;Driver layer&lt;br&gt;&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=19;" vertex="1" parent="1">
+          <mxGeometry x="115" y="530" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--26" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="105" y="640" width="960" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--27" value="&lt;b&gt;Arduino hardware layer&lt;br&gt;&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=19;" vertex="1" parent="1">
+          <mxGeometry x="115" y="650" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--28" value="Arduino hardware abstraction layer (Arduino framework)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="465" y="660" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--29" value="&lt;div&gt;AVR.h&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="665" y="660" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="8lNLlTqLAH2A5Mt0vKM--30" value="Abstraction layers" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=35;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="105" y="200" width="960" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

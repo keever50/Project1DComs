@@ -7,35 +7,35 @@
 
 #include <ExtRAM.h>
 
-void ExtRAM::set_bytes(uint16_t start, uint8_t value, uint16_t count )
+void ExtRAM::set_bytes(uint16_t start, uint8_t value, uint16_t count)
 {
   set_cs(true);
   write_address(start);
-  for(uint16_t i=0;i<count;i++)
+  for (uint16_t i = 0; i < count; i++)
   {
     write(value);
   }
-  set_cs(false);  
+  set_cs(false);
 }
 
 void ExtRAM::write_address(uint16_t address)
 {
   SPI.beginTransaction(SPISettings(RAM_SPEED, true, SPI_MODE0));
-  
+
   SPI.transfer(EXTRAM_REG_WRITE);
   SPI.transfer16(address);
 
-  SPI.endTransaction();  
+  SPI.endTransaction();
 }
 
 void ExtRAM::read_address(uint16_t address)
 {
   SPI.beginTransaction(SPISettings(RAM_SPEED, true, SPI_MODE0));
-  
+
   SPI.transfer(EXTRAM_REG_READ);
   SPI.transfer16(address);
 
-  SPI.endTransaction();  
+  SPI.endTransaction();
 }
 
 void ExtRAM::write_reg(uint8_t reg, uint8_t byte)
@@ -79,14 +79,12 @@ int ExtRAM::set_mode(uint8_t mode)
   Serial.print(read);
 
   delay(2);
-  if(read!=mode)
+  if (read != mode)
   {
     return 1;
   }
   return 0;
 }
-
-
 
 void ExtRAM::write(uint8_t byte)
 {
@@ -114,7 +112,7 @@ void ExtRAM::write_byte(uint16_t address, uint8_t byte)
   write_address(address);
   write(byte);
   set_cs(false);
-  //delay(1);
+  // delay(1);
 }
 
 uint8_t ExtRAM::read_byte(uint16_t address)
@@ -123,28 +121,28 @@ uint8_t ExtRAM::read_byte(uint16_t address)
   read_address(address);
   uint8_t byte = read();
   set_cs(false);
-  //delay(1);
+  // delay(1);
 
   return byte;
 }
 
-void ExtRAM::write_bytes(uint16_t address, const uint8_t* source, uint16_t count)
+void ExtRAM::write_bytes(uint16_t address, const uint8_t *source, uint16_t count)
 {
   set_cs(true);
   write_address(address);
-  for(uint16_t i=0;i<count;i++)
+  for (uint16_t i = 0; i < count; i++)
   {
     write(source[i]);
   }
   set_cs(false);
 }
-void ExtRAM::read_bytes(uint16_t address, uint8_t* destination, uint16_t count)
+void ExtRAM::read_bytes(uint16_t address, uint8_t *destination, uint16_t count)
 {
   set_cs(true);
   read_address(address);
-  for(uint16_t i=0;i<count;i++)
+  for (uint16_t i = 0; i < count; i++)
   {
-    destination[i]=read();
+    destination[i] = read();
   }
   set_cs(false);
 }
@@ -157,6 +155,5 @@ void ExtRAM::reset()
 }
 
 ExtRAM extram;
-
 
 #endif
