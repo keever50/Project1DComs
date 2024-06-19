@@ -7,11 +7,11 @@ int Tm_rf::init()
 {
     rh_ask.init();
     driver = &rh_ask;
-    
+
     return 0;
 }
 
-int Tm_rf::receive_raw_packet( bool blocking, hu_packet_t* packet )
+int Tm_rf::receive_raw_packet(bool blocking, hu_packet_t *packet)
 {
     uint8_t len = sizeof(temp_buffer);
     do
@@ -19,22 +19,23 @@ int Tm_rf::receive_raw_packet( bool blocking, hu_packet_t* packet )
         tm_sys.yield();
 
         bool rec = rh_ask.recv(temp_buffer, &len);
-        if(rec)
+        if (rec)
         {
             hu_protocol_decode_raw(packet, temp_buffer);
-            
+
             return 1;
         }
-    }while(blocking);
-    
+    } while (blocking);
+
     return 0;
 }
 
-int Tm_rf::transmit_raw( uint8_t* raw, uint8_t len, bool blocking )
+int Tm_rf::transmit_raw(uint8_t *raw, uint8_t len, bool blocking)
 {
-    bool success = rh_ask.send( raw, len );
-    
-    if(blocking) rh_ask.waitPacketSent(1000);
+    bool success = rh_ask.send(raw, len);
+
+    if (blocking)
+        rh_ask.waitPacketSent(1000);
     return success;
 }
 
