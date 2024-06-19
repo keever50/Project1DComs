@@ -21,8 +21,11 @@ LiquidCrystal_I2C lcd(0x027, 16, 2);
 void nm_route(char i);
 void kaartbepaler();
 void CO_route(char i);
-void RF_nm_send();
-int RF_nm_receive();
+void MM_gevonden();
+void CO_gevonden();
+void RF_nm_receive();
+void Error();
+void ack_nm();
 
 byte arrow_up[] = 
 {
@@ -50,7 +53,7 @@ byte arrow_down[] =
 
 void setup(void)
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   nfc.begin();
   lcd.init();
   rh_ask.init();
@@ -117,7 +120,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
   {
     lcd.clear();
     lcd.print(F("Kaart gescand"));
-    delay(2000);
+    delay(1000);
     lcd.clear();
 
     switch (UID_tag[0])
@@ -131,43 +134,47 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       }
       if (memcmp(UID_tag, startlocatie19, 4) == 0)
       {
-        MM++;
         i=19;
-        RF_nm_send();
+        MM_gevonden();
         RF_nm_receive();
         if (flag == 1)
         {
-        if (MM == 6)
+        MM++;
+        ack_nm();
+        if (MM == 5)
         {
           CO_route(i);
+          break;
         }
         else
         nm_route(i);
         break;
         }
         else
-        lcd.print(F("ERROR"));
+        Error();
       }
 
       case 0x1C:
       if (memcmp(UID_tag, startlocatie2, 4)== 0)
       {
-        MM++;
         i=2;
-        RF_nm_send();
+        MM_gevonden();
         RF_nm_receive();
         if (flag == 1)
         {
-        if (MM == 6)
+        MM++;
+        ack_nm();
+        if (MM == 5)
         {
           CO_route(i);
+          break;
         }
         else
         nm_route(i);
         break;
         }
         else
-        lcd.print(F("ERROR"));
+        Error();
       }
 
       case 0x02:
@@ -244,6 +251,11 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie9, 4)== 0)
       {
         i=9;
+        if (MM == 5)
+        {
+          CO_gevonden();
+        }
+        else
         nm_route(i);
         break;
       }
@@ -263,22 +275,24 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       case 0xB2:
       if (memcmp(UID_tag, startlocatie11, 4)== 0)
       {
-        MM++;
         i=11;
-        RF_nm_send();
+        MM_gevonden();
         RF_nm_receive();
         if (flag == 1)
         {
-        if (MM == 6)
+        MM++;
+        ack_nm();
+        if (MM == 5)
         {
           CO_route(i);
+          break;
         }
         else
         nm_route(i);
         break;
         }
         else
-        lcd.print(F("ERROR"));
+        Error();
       }
 
       case 0x12:
@@ -292,43 +306,47 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       case 0xA2:
       if (memcmp(UID_tag, startlocatie14, 4)== 0)
       {
-        MM++;
         i=14;
-        RF_nm_send();
+        MM_gevonden();
         RF_nm_receive();
         if (flag == 1)
         {
-        if (MM == 6)
+        MM++;
+        ack_nm();
+        if (MM == 5)
         {
           CO_route(i);
+          break;
         }
         else
         nm_route(i);
         break;
         }
         else
-        lcd.print(F("ERROR"));
+        Error();
       }
 
       case 0xE2:
       if (memcmp(UID_tag, startlocatie15, 4)== 0)
       {
-        MM++;
         i=15;
-        RF_nm_send();
+        MM_gevonden();
         RF_nm_receive();
         if (flag == 1)
         {
-        if (MM == 6)
+        MM++;
+        ack_nm();
+        if (MM == 5)
         {
           CO_route(i);
+          break;
         }
         else
         nm_route(i);
         break;
         }
         else
-        lcd.print(F("ERROR"));
+        Error();
       }
 
       case 0xFC:
@@ -358,47 +376,49 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       case 0xF3:
       if (memcmp(UID_tag, testkaart1, 4)== 0)
       {
-        MM++;
         i=0;
-        RF_nm_send();
+        MM_gevonden();
         RF_nm_receive();
         if (flag == 1)
         {
-        if (MM == 6)
+        MM++;
+        ack_nm();
+        if (MM == 5)
         {
           CO_route(i);
+          break;
         }
         else
         nm_route(i);
         break;
         }
         else
-        {
-        lcd.print(F("ERROR"));
-        delay(3000);
-        }
+        Error();
       }
 
       case 0xA5:
       if (memcmp(UID_tag, testkaart2, 4)== 0)
       {
-        MM++;
         i=0;
-        RF_nm_send();
+        MM_gevonden();
         RF_nm_receive();
         if (flag==1)
         {
-        if (MM == 6)
+        MM++;
+        ack_nm();
+        if (MM == 5)
         {
           CO_route(i);
+          break;
         }
         else
         nm_route(i);
         break;
         }
+        else
+        Error();
       }
       default:
-      lcd.setCursor(0,1);
       lcd.print(F("probeer opnieuw"));
       break;
     }
@@ -715,7 +735,7 @@ void CO_route(char i)
   }
 }
 
-void RF_nm_send()
+void MM_gevonden()
 {
 digitalWrite(yellow_pin, HIGH);
 uint8_t functie = 0xE7;
@@ -730,33 +750,86 @@ packet.source = 0x4C;
 
 lcd.print(F("Sending"));
 hu_protocol_transmit(&rh_ask, &packet);
-delay(1000);
+delay(500);
 digitalWrite(yellow_pin, LOW);
 }
 
-int RF_nm_receive()
+void RF_nm_receive()
 {
+char a = 0;
 lcd.clear();
 lcd.print(F("Receiving"));
 digitalWrite(green_pin, HIGH);
 hu_packet_t packet;
-hu_prot_receive_err_t err = hu_protocol_receive(&rh_ask, &packet);
-delay(1000);
-uint8_t functiecode = packet.function;
-if (err == HU_PROT_RECEIVE_RECEIVED)
+while (a != 1)
 {
-  switch (functiecode)
-  {
-    case 0xEC:
-    flag=1;
-    break;
-
-    default:
-    flag=0;
-  }
+hu_prot_receive_err_t err = hu_protocol_receive(&rh_ask, &packet);
+if ((packet.function == 0xEC) && (packet.destination == 0x4C) )
+{
+  digitalWrite(green_pin, LOW);
+  lcd.clear();
+  flag = 1;
+  a = 1;
 }
-digitalWrite(green_pin, LOW);
-lcd.clear();
+}
+}
+
+void Error()
+{
+  lcd.clear();
+  lcd.print(F("ERROR"));
+  char k = 0;
+  while (k < 10)
+  {
+    k++;
+    digitalWrite(red_pin, LOW);
+    delay(200);
+    digitalWrite(red_pin, HIGH);
+    delay(200);
+  }
+  lcd.clear();
+}
+
+void ack_nm()
+{
+lcd.print(F("Sending"));
+delay(2000);
+digitalWrite(yellow_pin, HIGH);
+uint8_t functie = 0xEC;
+hu_packet_t packet;
+
+packet.start=HU_PROTOCOL_START_BYTE;
+packet.end=HU_PROTOCOL_END_BYTE;
+packet.function= functie;
+packet.data[0]= 6;
+packet.length= HU_PROTOCOL_LENGTH_NON_DATA + 1;
+packet.destination = 0x2C;
+packet.source = 0x4C;
+
+hu_protocol_transmit(&rh_ask, &packet);
+delay(500);
+digitalWrite(yellow_pin, LOW);
+}
+
+void CO_gevonden()
+{
+lcd.print(F("Sending"));
+delay(2000);
+digitalWrite(yellow_pin, HIGH);
+uint8_t functie = 0xF3;
+hu_packet_t packet;
+
+packet.start=HU_PROTOCOL_START_BYTE;
+packet.end=HU_PROTOCOL_END_BYTE;
+packet.function= functie;
+packet.data[0]= 108;
+packet.length= HU_PROTOCOL_LENGTH_NON_DATA + 1;
+packet.destination = 0x2C;
+packet.source = 0x4C;
+
+hu_protocol_transmit(&rh_ask, &packet);
+delay(500);
+digitalWrite(yellow_pin, LOW);
 }
 #endif
 
