@@ -5,6 +5,11 @@
 #if defined(TEST_MODULE) || defined(TM_MEM_HACK_TEST)
 
 /****************
+     SERIAL
+****************/
+#define SER_BAUD 115200
+
+/****************
      RADIO
 ****************/
 // Pins

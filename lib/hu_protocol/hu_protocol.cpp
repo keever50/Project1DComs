@@ -190,7 +190,6 @@ hu_prot_receive_err_t hu_protocol_decode(hu_packet_t *packet)
         return HU_PROT_RECEIVE_TOO_LONG;
     }
 
-
     // if(packet->function>HU_PROTOCOL_FUNCTION_RANGE)
     // {
     //     Serial.print(F("receive packet error: unknown function ["));
@@ -465,4 +464,106 @@ void setup00()
                     4.22, 306.00, 305.00} // test values//
         };
     printUnionBytes(sensorUnion); // call in loop with an empty struct
+}
+
+// Written by Marijn Boumans & Kevin Witteveen
+String hu_protocol_decode_address(uint8_t address)
+{
+    if (address == 0x00)
+        return "N/A";
+
+    String addressName = "";
+
+    char letter = 'A' + (address & 0b11);
+    addressName += "2";
+    addressName += letter;
+
+    addressName += "-";
+
+    char group_number = '0' + ((address >> 2) & 0b111);
+    addressName += "G";
+    addressName += group_number;
+
+    addressName += "-";
+
+    switch ((address >> 5) & 0b111)
+    {
+    case 0b000:
+        addressName += "MM";
+        break;
+    case 0b001:
+        addressName += "CM";
+        break;
+    case 0b010:
+        addressName += "NM";
+        break;
+    case 0b011:
+        addressName += "CO";
+        break;
+    case 0b100:
+        addressName += "TM";
+        break;
+    }
+
+    return addressName;
+}
+
+String hu_protocol_decode_function(uint8_t func)
+{
+    String msg = "";
+
+    msg += "0x";
+    msg += String(func, HEX);
+    msg += " ";
+
+    // Read function bits
+    uint8_t funcbits = func >> 2;
+    funcbits &= 0b1111;
+    switch (funcbits)
+    {
+    case 1:
+        msg += "Retransmit";
+        break;
+    case 5:
+        msg += "Opvr meetw";
+        break;
+    case 6:
+        msg += "Overd meetw";
+        break;
+    case 8:
+        msg += "Opvr status";
+        break;
+    case 10:
+        msg += "MM tag gev";
+        break;
+    case 11:
+        msg += "meetw uitlzn";
+        break;
+    case 12:
+        msg += "Acknowledge";
+        break;
+    case 13:
+        msg += "CO tag gev";
+        break;
+    default:
+        msg += "Unknown";
+        break;
+    }
+
+    msg += "(";
+
+    // Read request/response
+    uint8_t requestbits = func &= 0b11;
+    if (requestbits)
+    {
+        msg += "requ";
+    }
+    else
+    {
+        msg += "respo";
+    }
+
+    msg += ")";
+
+    return msg;
 }

@@ -8,6 +8,8 @@ hu_packet_t debug_packetbuffer_receive;
 
 bool debug_packetbuffer_override_LRC = false;
 
+int _tm_exec_state_send(hu_packet_t &packet);
+
 int tm_exec_scrambler_open(String full_command)
 {
     String arg = execs_get_arg(full_command, 1);
@@ -88,25 +90,26 @@ void tm_prog_receiver_print_packet(hu_packet_t &packet, bool our_packet)
     tm_io.print(String(packet.length) + '\n');
 
     tm_io.print(F("Function: "));
-    tm_io.print(String(packet.function) + '\n');
+    String functionname = hu_protocol_decode_function(packet.function);
+    tm_io.print(functionname + '\n');
 
     tm_io.print(F("Source: "));
-    tm_io.print(String(packet.source) + '\n');
+    String addressname = hu_protocol_decode_address(packet.source);
+    tm_io.print(addressname + '\n');
 
     tm_io.print(F("Destination: "));
-    tm_io.print(String(packet.destination) + '\n');
+    addressname = hu_protocol_decode_address(packet.destination);
+    tm_io.print(addressname + '\n');
 
     // Data
-    tm_io.set_color(0b11111111);
-    tm_io.print(F("DATA START (HEX)\n"));
-    // for( uint8_t i=0; i<packet.length-HU_PROTOCOL_LENGTH_NON_DATA; i++)
-    // {
-    //     if(i%5==0) tm_io.print("\n");
-    //     tm_io.print(String(i) + ":" + String( packet.data[i], HEX)+"|");
-    // }
-    tm_prog_receiver_print_data(packet);
-    tm_io.print(F("\nDATA END\n"));
-    tm_io.set_color(0b10010111);
+    if (packet.length > 4)
+    {
+        tm_io.set_color(0b11111111);
+        tm_io.print(F("DATA START (HEX)\n"));
+        tm_prog_receiver_print_data(packet);
+        tm_io.print(F("\nDATA END\n"));
+        tm_io.set_color(0b10010111);
+    }
 
     tm_io.print(F("End: "));
     tm_io.print(String(packet.end) + '\n');
@@ -215,8 +218,12 @@ int tm_exec_packet_generator_open(String full_command)
         {
         case '0':
         {
-            tm_io.print(F("func"));
-            in = tm_io.input(true);
+            debug_packetbuffer.start = 0x01;
+            debug_packetbuffer.end = 0x04;
+            debug_packetbuffer.source = hu_protocol_get_address();
+            debug_packetbuffer.length = 4;
+            tm_io.print(F("Minimums set\n"));
+            // in = tm_io.input(true);
 
             break;
         }
@@ -319,6 +326,74 @@ int tm_exec_packet_send_open(String full_command)
         delay(250);
     }
     tm_io.print(F("\nDone\n"));
+    return 0;
+}
+
+int tm_exec_packet_recsend(String full_command)
+{
+    tm_io.print(F("Listening..."));
+    for (;;)
+    {
+        // Stop when any key is pressed
+        if (tm_io.get_char(false) != '\0')
+            return 0;
+        int rec = tm_rf.receive_raw_packet(false, &debug_packetbuffer_receive);
+        if (rec)
+        {
+            delay(500);
+            int err = _tm_exec_state_send(debug_packetbuffer);
+            if (err)
+                return err;
+
+            tm_io.print("\nReceived and sent packet\n");
+            tm_prog_receiver_print_packet(debug_packetbuffer_receive, false);
+            break;
+        }
+    }
+
+    return 0;
+}
+
+int tm_exec_packet_sendrec_open(String full_command)
+{
+    tm_io.print(F("Sending packet"));
+    // int err = hu_protocol_transmit(tm_rf.get_driver(), &debug_packetbuffer);
+    int err = hu_protocol_transmit_manual(tm_rf.get_driver(), &debug_packetbuffer, false, !debug_packetbuffer_override_LRC);
+
+    if (err)
+    {
+        tm_io.print("\nTransmit error\n");
+        return err;
+    }
+
+    while (tm_rf.get_mode() == RHGenericDriver::RHModeTx)
+    {
+        tm_io.print(F("."));
+        delay(250);
+    }
+
+    tm_io.print(F("listening"));
+    unsigned long start = millis();
+    for (;;)
+    {
+        // Break when any key is pressed
+        if (tm_io.get_char(false) != '\0')
+            break;
+
+        int rec = tm_rf.receive_raw_packet(false, &debug_packetbuffer_receive);
+        if (rec)
+        {
+            tm_io.print("\n");
+            tm_prog_receiver_print_packet(debug_packetbuffer_receive, false);
+            break;
+        }
+
+        if (millis() - start > TM_TRANSFLOW_RECEIVE_TIMEOUT)
+        {
+            tm_io.print("\nTimeout\n");
+            return 1;
+        }
+    }
     return 0;
 }
 
