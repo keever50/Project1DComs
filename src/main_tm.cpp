@@ -73,14 +73,25 @@ int tm_exec_help(String full_input)
     return 0;
 }
 
+int bitrate_select()
+{
+    tm_io.print("Select RF bitrate");
+    String str = tm_io.input(true);
+    return str.toInt();
+}
+
 void setup()
 {
     delay(500);
     Serial.begin(SER_BAUD);
     tm_sys.init();
-    tm_rf.init();
+    
     tm_io.init();
     tm_io.set_color(0b11111111);
+
+    // Let user select RF bitrate for initialization
+    tm_rf.init(bitrate_select());
+
     tm_io.print(F("Welcome\nEnter help to list commands\n"));
     tm_io.print("Connect to a serial monitor on\n" + String(SER_BAUD) + " baud for easier control\n");
 
