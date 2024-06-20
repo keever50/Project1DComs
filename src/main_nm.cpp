@@ -4,6 +4,7 @@
 #include <Adafruit_PN532.h>
 #include <LiquidCrystal_I2C.h>
 #include <hu_protocol.h>
+#include <avr/wdt.h>
 
 #define PN532_IRQ   (2)
 #define PN532_RESET (3)
@@ -26,6 +27,7 @@ void CO_gevonden();
 void RF_nm_receive();
 void Error();
 void ack_nm();
+void reset();
 
 byte arrow_up[] = 
 {
@@ -771,6 +773,12 @@ if ((packet.function == 0xEC) && (packet.destination == 0x4C) )
   flag = 1;
   a = 1;
 }
+else if((packet.function == 0xDB) && (packet.destination == 0x4C))
+{
+  ack_nm();
+  reset();
+  a = 1;
+}
 }
 }
 
@@ -830,6 +838,12 @@ packet.source = 0x4C;
 hu_protocol_transmit(&rh_ask, &packet);
 delay(500);
 digitalWrite(yellow_pin, LOW);
+}
+
+void reset()
+{
+  wdt_enable(WDTO_15MS);
+  while(1);
 }
 #endif
 
