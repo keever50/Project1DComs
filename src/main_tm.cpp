@@ -13,24 +13,31 @@ int Etest(String full_input);
 int tm_exec_help(String full_input);
 int tm_exec_redraw(String full_input);
 int tm_exec_sleep(String full_input);
+int tm_exec_reset(String full_input);
 execs_function_t mainexecs[] =
     {
-        {"test", Etest, "TEST"},
-        {"rec", tm_exec_receiver_open, "Receives HU packets"},
-        {"scram", tm_exec_scrambler_open, "(Scram)bler.\n     Usage: scram (bytes)"},
+        {"rec", tm_exec_receiver_open, "Receives packets"},
+        {"scram", tm_exec_scrambler_open, "send random bytes\nEx: scram 50 sends 50 random bytes"},
         {"help", tm_exec_help, ""},
         {"redraw", tm_exec_redraw, "Redraws the screen"},
-        {"gen", tm_exec_packet_generator_open, "Opens HU packet (gen)eration menu"},
+        {"gen", tm_exec_packet_generator_open, "Build a packet"},
+        {"data", tm_exec_packet_data_open, "Build data for packet"},
         {"send", tm_exec_packet_send_open, "Transmits a packet"},
-        {"getf", tm_exec_packet_getf, "gets a float in a data address"},
-        {"data", tm_exec_packet_data_open, "Opens the data editor for packets"},
-        {"view", tm_exec_packet_view, "views the last received packet"},
-        {"sendf", tm_exec_packet_send_full_open, "Send full transmission flow"},
+        {"getf", tm_exec_packet_getf, "read float from data\nEx: getf 4 gets float on pos 4"},
+        {"view", tm_exec_packet_view, "view the last packet"},
+        //{"sendf", tm_exec_packet_send_full_open, "Send full transmission flow"},
         {"sleep", tm_exec_sleep, "Sleeps the device"},
         {"sendrec", tm_exec_packet_sendrec_open, "sends and receives"},
         {"recsend", tm_exec_packet_recsend, "receives and sends"},
+        {"reset", tm_exec_reset, "resets the testmodule"},
         {"", NULL, ""} // Terminator
 };
+
+int tm_exec_reset(String full_input)
+{
+    while (true)
+        ;
+}
 
 int tm_exec_sleep(String full_input)
 {
@@ -63,11 +70,15 @@ int tm_exec_help(String full_input)
     {
         if (mainexecs[i].function == NULL)
             break;
+        tm_io.set_color(0b11111000);
         String command = mainexecs[i].name;
         command.toUpperCase();
         String desc = mainexecs[i].description;
-        tm_io.print(command + ":\"" + desc + "\"\n");
+        tm_io.print(command + ": ");
+        tm_io.set_color(0b11010110);
+        tm_io.print(desc + "\n");
     }
+    tm_io.set_color(0b11111111);
     tm_io.set_auto_flush(true);
     tm_io.flush();
     return 0;
@@ -75,7 +86,8 @@ int tm_exec_help(String full_input)
 
 int bitrate_select()
 {
-    tm_io.print("Select RF bitrate");
+    tm_io.print("Select RF bitrate (Default 2000)");
+    tm_io.get_char(false);
     String str = tm_io.input(true);
     return str.toInt();
 }
@@ -85,7 +97,7 @@ void setup()
     delay(500);
     Serial.begin(SER_BAUD);
     tm_sys.init();
-    
+
     tm_io.init();
     tm_io.set_color(0b11111111);
 
