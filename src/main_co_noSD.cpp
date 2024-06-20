@@ -1,5 +1,7 @@
 #ifdef CENTRALE_OPSLAG
 
+
+//Libraries includeren
 #include <hu_protocol.h>
 #include <Arduino.h>
 #include <RH_ASK.h>
@@ -7,7 +9,12 @@
 #include <LiquidCrystal_I2C.h>
 #include <avr/wdt.h>
 
+//LCD en RF instellen
+LiquidCrystal_I2C lcd(0x27,  16, 2); 
+RH_ASK rh_ask(500, 10, 11, 0, false); // Bitrate, receive pin, transmit pin, select pin(niet gebruikt), select inverse(niet gebruikt)
 
+
+//Bepaalde waardes definiëren
 #define functiem_opvraag 0b11011111 //functiecode opvragen status ontvangen
 #define functiem_opvraag_response 0b11011100 //functiecode opvragen status antwoorden
 #define functiem_overdragen_ask 0b11010111 //functiecode overdragen meetwaardes ready?
@@ -18,12 +25,12 @@
 #define functiem_retrans_rec 0b11000011 //functiecode voor retransmit ontvangen
 #define functiem_reset 0b11011011 //functiecode voor reset ontvangen
 
-
 #define statusbyte_namont 0b11100000
 #define statusbyte_amont 0b11100111
 #define statusbyte_namopg 0b11101000
 #define statusbyte_amopg 0b11101111
 
+#define AckData 0x06
 #define eindStudentNR 0b01011101
 
 #define ButtonUp 4
@@ -32,11 +39,9 @@
 #define GreenLed 9
 #define YellowLed 3
 
-uint8_t statusbyte_send = statusbyte_namont;
 
-
-
-struct dataReadings {// selectie floats in een bepaalde orde 
+//Struct waar de meetwaardes in kunnen aanmaken
+struct dataReadings {
     float avgTemp;
     float avgLDR;
     float avgPot;
@@ -52,11 +57,7 @@ static dataReadings reading1, reading2, reading3, reading4, reading5, reading6, 
 
 
 
-
-LiquidCrystal_I2C lcd(0x27,  16, 2); 
-RH_ASK rh_ask(500, 10, 11, 0, false); // Bitrate, receive pin, transmit pin, select pin(unused), select inverse(unused)
-
-
+//Alle functies declareren
 void AskData(int fileReadNR1, char fileDataPartNR1);
 void SDtoLCD2(String voorwoord, float ltr);
 void saveData(const dataReadings* readings);
@@ -65,25 +66,31 @@ void sendrf(uint8_t functie, uint8_t destinatie, uint8_t dataS);
 void meetwaardes_recv(uint8_t *data, uint8_t dataLenght);
 uint8_t status_encode();
 void blinkLed();
-String Address_decode(uint8_t adressMM);
 void SDtoLCD_MM(String voorwoord2, String Adress_MM_Decoded);
-
 void resetArduino();
 
+//Globale variabelen aanmaken
+uint8_t statusbyte_send = statusbyte_namont;
 int filewriteNR = 0;
 char fileDataPartNR = 0;
 int fileReadNR = 0;
 char lrc_err_marijn = 0;
 
-String dataString;
+
 
 void setup()
 {
-    hu_protocol_set_address(hu_protocol_encode_address("2AG3CO"));
     Serial.begin(9600);
+    //Source adres instellen
+    hu_protocol_set_address(hu_protocol_encode_address("2AG3CO"));
+    Serial.println(F("Welkom bij de CO"));
+
+    //drivers initialiseren
     rh_ask.init();
     lcd.init();
     lcd.backlight();
+
+    //Inputs & outputs instellen
     pinMode(ButtonUp, INPUT_PULLUP);
     pinMode(ButtonDown, INPUT_PULLUP);
     pinMode(6, INPUT_PULLUP);
@@ -97,10 +104,15 @@ void setup()
 void loop()
 {
     HUontvangen();
-    if(digitalRead(4) == LOW)
+
+    if(digitalRead(ButtonUp) == LOW) //Als de "omhoog" knop wordt ingedrukt
     {
+        //Verander de te lezen waarde met +1
         fileDataPartNR +=1;
-        if(fileReadNR <= 0) fileReadNR = 1;
+        if(fileReadNR <= 0) 
+        { 
+            fileReadNR = 1;
+        }
         if(fileDataPartNR >= 11)
         {
             fileDataPartNR = 1;
@@ -112,8 +124,9 @@ void loop()
         delay(500);
     }
 
-    if(digitalRead(5) == LOW)
+    if(digitalRead(ButtonDown) == LOW) //Als de "omlaag" knop wordt ingedrukt
     {
+        //Verander de te lezen waarde met -1
         fileDataPartNR -=1;
         if(fileDataPartNR <=0)
         {
@@ -126,79 +139,78 @@ void loop()
         AskData(fileReadNR, fileDataPartNR);
         delay(500);
     } 
-    if(digitalRead(6) == LOW)
-    {
-        uint8_t dataTT[] = {0x0C, 0xCD, 0xCC, 0xCC, 0x40, 0x66, 0xA6, 0xA4, 0x43, 0x9A, 0x19, 0xA2, 0x43, 0xB8, 0x1E, 0x15, 0x41, 0x00, 0x80, 0xB7, 0x43, 0x00, 0x00, 0xAA, 0x43, 0x3D, 0x0A, 0x87, 0x40, 0x00, 0x00, 0x99, 0x43, 0x00, 0x80, 0x98, 0x43};
-        meetwaardes_recv(dataTT, 37);
-        //sendrf(functiem_acknowledge_trans, 0, 0x06);
-        delay(1000);
-    }
 }
 
 void HUontvangen(void)
 {
     //Serial.println("Receiving...");
 
-    ///////////////////////////////////////////////////////////////////////////Written with Kevin Witteveen
-    hu_packet_t packet;
+    hu_packet_t packet; //Pakket aanmaken dat later wordt ingevuld
     
+    //Library aanroepen om pakket te ontvangen
     hu_prot_receive_err_t err = hu_protocol_receive( &rh_ask, &packet );
-    if(err != HU_PROT_RECEIVE_IGNORE && err != HU_PROT_RECEIVE_LISTENING)
+
+    if(err != HU_PROT_RECEIVE_IGNORE && err != HU_PROT_RECEIVE_LISTENING) //Geen fouten in pakket
     {
-        // Print out the packet 
+        //Volledig pakket printen
         hu_protocol_print_packet(&packet);
         
     }    
-    /////////////////////////////////////////////////////////////////////////////////////////////////
-    else if(err == HU_PROT_RECEIVE_INCORRECT_LRC)
+    else if(err == HU_PROT_RECEIVE_INCORRECT_LRC) //Controleren of er een LRC error is
     {
         lrc_err_marijn +=1;
-        sendrf(functiem_retrans_trans, packet.source, 0);
-        blinkLed();
+        sendrf(functiem_retrans_trans, packet.source, 0); //Vraag om een retransmit
+        blinkLed(); 
     }
-    uint8_t* data = packet.data;
-    uint8_t dataLengthStart = packet.length;
+    uint8_t* data = packet.data; //Data uit pakket halen
+    uint8_t dataLengthStart = packet.length; //Lengte van het pakket
+
+    if(err==HU_PROT_RECEIVE_RECEIVED)
+    {
+        analogWrite(YellowLed, HIGH);
+    }
     if(err==HU_PROT_RECEIVE_RECEIVED)
     {   
-        analogWrite(GreenLed, 300);
-        Serial.println(F("iets ontvangen"));
-        switch(packet.function)
+      
+        switch(packet.function) //Switch die kijkt naar de functiecode van het ontvangen pakket
         {
-        case functiem_opvraag:
+        case functiem_opvraag: //De testmodule vraagt de status op
+            Serial.println(F("status opvraag"));
             delay(500);
-            sendrf(functiem_opvraag_response, packet.source, status_encode());
+            sendrf(functiem_opvraag_response, packet.source, status_encode()); //Stuur de status
             break;
-        case functiem_overdragen_ask:
-        delay(500);
-            sendrf(functiem_acknowledge_trans, packet.source, 0x06);
-            break;
-        case functiem_overdragen_waardes:
-            statusbyte_send = statusbyte_amont;         
-            meetwaardes_recv(data, dataLengthStart-4);
-            sendrf(functiem_acknowledge_trans, packet.source, 0x06);
-            break;
-        case functiem_retrans_rec:
+        case functiem_overdragen_ask: //De CM vraagt of de CO klaar is om meetwaardes te ontvangen
+            Serial.println(F("klaar om data te ontvangen"));
             delay(500);
-            sendrf(functiem_acknowledge_trans, packet.source, 0x06);
+            sendrf(functiem_acknowledge_trans, packet.source, AckData); //Stuur acknowledge
             break;
-        case functiem_reset:
+        case functiem_overdragen_waardes: //De CM stuurt de meetwaardes op
+            lcd.clear();
+            lcd.print(F("Data ontvangen"));
+            statusbyte_send = statusbyte_amont; 
+            meetwaardes_recv(data, dataLengthStart-4); //Meetwaardes lokaal opslaan
+            sendrf(functiem_acknowledge_trans, packet.source, AckData); //Stuur acknowledge
+            break;
+        case functiem_retrans_rec: //Module vraagt om retransmit
+            Serial.println(F("retransmit"));
+            delay(500);
+            sendrf(functiem_acknowledge_trans, packet.source, AckData); //Stuur acknowledge
+            break;
+        case functiem_reset: //De testmodule laat de CO resetten
             Serial.println(F("resetting...."));
-            sendrf(functiem_acknowledge_trans, packet.source, 0x06);
-            resetArduino();
+            sendrf(functiem_acknowledge_trans, packet.source, AckData); //Stuur acknowledge
+            resetArduino(); 
             break;
-        /*case functiem_acknowledge:
-            sendrf(functiem_acknowledge_trans, packet.source, 0x06);
-            break; */
         default:
             Serial.println(F("No function code"));
             break;
         }
     }
     analogWrite(GreenLed, 0);
-    memset(&packet, 0, sizeof(packet));
+    memset(&packet, 0, sizeof(packet)); //Maak packet leeg
 }
 
-void meetwaardes_recv(uint8_t *dataR, uint8_t dataLength)
+void meetwaardes_recv(uint8_t *dataR, uint8_t dataLength) //Meetwaardes opslaan in een tijdelijke struct
 {
     filewriteNR +=1;
     byte dataArray[37];
@@ -207,12 +219,12 @@ void meetwaardes_recv(uint8_t *dataR, uint8_t dataLength)
     Serial.println(dataLength, DEC);
     char j = 0;
     Serial.println(F("Ontvangen data:"));
-    for(char i=0; i <= dataLength; i++)
+    for(char i=0; i <= dataLength; i++) //Elke byte van ontvangen data overzetten naar dataArray
     {
         dataArray[i] = dataR[j];
         if(dataR[i] < 0x10) 
         {
-            Serial.print('0');
+            Serial.print(F("0"));
         }
         Serial.println(dataR[i], HEX);
         j++;
@@ -221,14 +233,14 @@ void meetwaardes_recv(uint8_t *dataR, uint8_t dataLength)
     dataReadings reading;
     ////////////////////////////////////////////////////////////////////Hulp van Hayan Rafee
     byte* ptr = (byte*)&reading;
-    for (uint8_t i = 1; i < sizeof(dataReadings); i++) 
+    for (uint8_t i = 1; i < sizeof(dataReadings); i++) //Struct reading vullen met de ontvangen floats
     {
         *ptr++ = dataArray[i];
     }
     /////////////////////////////////////////////////////////////////////////////////
     reading.MM_adress = dataArray[0];
 
-    //dataReadings reading = {dataArray[0],(float)dataArray[1,2,3,4],dataArray[5,6,7,8],dataArray[9,10,11,12],dataArray[13,14,15,16],dataArray[17,18,19,20],dataArray[21,22,23,24],dataArray[25,26,27,28],dataArray[29,30,31,32],dataArray[33,34,35,36]};    
+    //Print de opgeslagen waardes    
     Serial.println(F("De waardes opgeslagen vlak na receive, eerst dataArray en dan dataR"));
     Serial.println(reading.MM_adress);
     Serial.println(reading.avgTemp);
@@ -246,11 +258,11 @@ void meetwaardes_recv(uint8_t *dataR, uint8_t dataLength)
     
 }
 
-void saveData(const dataReadings* readings)
+void saveData(const dataReadings* readings) //Sla de waardes uit de tijdelijke struct op in een semi-permanente struct
 {
     Serial.println(F("saving data"));
     
-    switch(filewriteNR)
+    switch(filewriteNR) //Switch die de waardes van elke meetmodule opslaat in zijn eigen struct
     {
         case 1:
         reading1 = {readings->avgTemp,readings->avgLDR,readings->avgPot,readings->maxTemp,readings->maxLDR,readings->maxPot,readings->minTemp,readings->minLDR,readings->minPot, readings->MM_adress};
@@ -278,25 +290,20 @@ void saveData(const dataReadings* readings)
         break;
     }
 
-    Serial.println(F("data has been saved, avgTemp:"));
-    Serial.println(reading1.avgTemp);
+    Serial.println(F("data has been saved"));
     statusbyte_send = statusbyte_amopg;
 
 }
 
 
 
-void AskData(int fileReadNR1, char fileDataPartNR1)
+void AskData(int fileReadNR1, char fileDataPartNR1) //Data opvragen met interfaceknoppen
 {
     dataReadings* currentReading;
-    //fileReadNR1 = 1; //verwijder straks
-    //fileDataPartNR1 = 1; //verwijder straks
-    switch(fileReadNR1)
+    switch(fileReadNR1) //Switch die de waardes van de juiste meetmodule kiest
     {
         case 1:
             currentReading = &reading1;
-            Serial.println(F("currentreading is nu reading 1, avgTemp:"));
-            Serial.println(currentReading->avgTemp);
             break;
         case 2:
             currentReading = &reading2;
@@ -321,18 +328,12 @@ void AskData(int fileReadNR1, char fileDataPartNR1)
             break;
     }
 
-    switch (fileDataPartNR1)
+    switch (fileDataPartNR1) //Switch die van de gekozen meetmodule de juiste waarde selecteert
     {
         case 1:
-            
-            Serial.println(F("sdnaarLCD krijgt als mm adres:"));
-            Serial.println(currentReading->MM_adress, DEC);
-            //SDtoLCD2("Add meetmodule: ", currentReading->MM_adress);
-            SDtoLCD_MM("Add meetmodule: ", Address_decode(currentReading->MM_adress));
+            SDtoLCD_MM("Add meetmodule: ", hu_protocol_decode_address(currentReading->MM_adress));
             break;
         case 2:
-            Serial.println(F("sdnaarLCD krijgt als gem temp:"));
-            Serial.println(currentReading->avgTemp, DEC);
             SDtoLCD2("Gemiddeld Temp: ",currentReading->avgTemp);
             break;
         case 3:
@@ -365,15 +366,14 @@ void AskData(int fileReadNR1, char fileDataPartNR1)
 }
 
 
-void SDtoLCD2(String voorwoord, float ltr)
+void SDtoLCD2(String voorwoord, float ltr) //Print de waarde op het lcd scherm
 {
-    Serial.println(F("ltr is geworden:"));
-    Serial.println(ltr, DEC);
+    String dataString="";
     dataString =String(ltr, DEC);
     const int str_len = dataString.length() +1;
     char lcdText[str_len];
-    dataString.toCharArray(lcdText, str_len);
-    Serial.println(F("char array is:"));
+    dataString.toCharArray(lcdText, str_len); //Inhoud float omzetten naar een charArray voor het LCD
+    Serial.println(F("display data:"));
     Serial.println(lcdText);
     lcd.clear();
     lcd.setCursor(0,0);
@@ -382,9 +382,9 @@ void SDtoLCD2(String voorwoord, float ltr)
     lcd.print(dataString);
 }   
 
-void SDtoLCD_MM(String voorwoord2, String Adress_MM_Decoded)
+void SDtoLCD_MM(String voorwoord2, String Adress_MM_Decoded) //Adres meetmodule printen op LCD
 {
-    Serial.println(Adress_MM_Decoded);
+    Serial.println(voorwoord2 + Adress_MM_Decoded);
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print(voorwoord2);
@@ -392,10 +392,12 @@ void SDtoLCD_MM(String voorwoord2, String Adress_MM_Decoded)
     lcd.print(Adress_MM_Decoded);
 }
 
-void sendrf(uint8_t functie, uint8_t destinatie, uint8_t dataS)
+void sendrf(uint8_t functie, uint8_t destinatie, uint8_t dataS) //Zendfunctie die de functiecode, bestemming en data vraagt
 {
     analogWrite(YellowLed, 300);
-    hu_packet_t packet;
+    hu_packet_t packet; //Maak pakket aan
+
+    //Geef het pakket de volgende waardes
     packet.start=HU_PROTOCOL_START_BYTE;
     packet.end=HU_PROTOCOL_END_BYTE;
     packet.function= functie;
@@ -403,13 +405,15 @@ void sendrf(uint8_t functie, uint8_t destinatie, uint8_t dataS)
     packet.length= HU_PROTOCOL_MIN_PACKET_LEN+(sizeof(dataS));
     packet.destination = destinatie;
     packet.source = hu_protocol_encode_address("2AG3CO");
+
     Serial.println(F("Packet made"));
+
     hu_protocol_transmit( &rh_ask, &packet );
     Serial.println(F("Packet sent"));
     analogWrite(YellowLed, 0);
 }
 
-uint8_t status_encode()
+uint8_t status_encode() //Statusbyte in elkaar zetten
 {
     byte Ma = statusbyte_send;
     byte Mb = (byte)(millis()/60000UL);
@@ -425,7 +429,7 @@ uint8_t status_encode()
     return status_calcd2[0,1,2,3];
 }
 
-void blinkLed()
+void blinkLed() //Rode LED laten knipperen wanneer nodig
 {
     for(char ll=0; ll <=10; ll++)
     {
@@ -436,83 +440,11 @@ void blinkLed()
     }
 }
 
-void resetArduino()
+void resetArduino() //Arduino resetten
 {
     wdt_enable(WDTO_15MS);
     while(1);
 }
 
-String Address_decode(uint8_t addressMM)
-{
-    String addressName="";
-    switch((addressMM >> 5) & 0b111)
-    {
-        case 0b000:
-            addressName += "MM ";
-            break;
-        case 0b001:
-            addressName += "CM ";
-            break;
-        case 0b010:
-            addressName += "NM ";
-            break;
-        case 0b011:
-            addressName += "CO ";
-            break;
-        case 0b100:
-            addressName += "TM ";
-            break;
-    }
-	
-
-    switch(addressMM & 0b11)
-    {
-        case 0b00:
-            addressName +="EV2A ";
-            break;
-        case 0b01:
-            addressName +="EV2B ";
-            break;
-        case 0b10:
-            addressName +="EV2C ";
-            break;
-        case 0b11:
-            addressName +="EV2D ";
-            break; 
-        default:
-            break;
-    }
-
-    switch((addressMM >> 2) & 0b111)
-    {
-        case 0b001:
-            addressName +="Groep 1";
-            break;
-        case 0b010:
-            addressName +="Groep 2";
-            break;
-        case 0b011:
-            addressName +="Groep 3";
-            break;
-        case 0b100:
-            addressName +="Groep 4";
-            break; 
-        case 0b101:
-            addressName +="Groep 5";
-            break;
-        case 0b110:
-            addressName +="Groep 6";
-            break;
-        case 0b111:
-            addressName +="Groep 7";
-            break; 
-        default:
-            break;
-    }
-
-    if(addressMM == 0x00) addressName = "Geen Waardes";
-
-    return addressName;
-}
 
 #endif

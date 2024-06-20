@@ -1,4 +1,4 @@
-#ifdef CENTRALE_OPSLAG
+#ifdef CENTRALE_OPSLAG_oud
 
 #include <hu_protocol.h>
 #include <Arduino.h>
