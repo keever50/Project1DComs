@@ -1,10 +1,11 @@
 #ifdef TEST_MODULE
 #include <tm_rf.h>
 
-static RH_ASK rh_ask(RA_BITRATE, RA_RX, RA_TX, RA_TR, false);
+//static RH_ASK rh_ask(RA_BITRATE, RA_RX, RA_TX, RA_TR, false);
 
-int Tm_rf::init()
+int Tm_rf::init(int bitrate)
 {
+    static RH_ASK rh_ask(bitrate, RA_RX, RA_TX, RA_TR, false);
     rh_ask.init();
     driver = &rh_ask;
 
@@ -18,7 +19,7 @@ int Tm_rf::receive_raw_packet(bool blocking, hu_packet_t *packet)
     {
         tm_sys.yield();
 
-        bool rec = rh_ask.recv(temp_buffer, &len);
+        bool rec = driver->recv(temp_buffer, &len);
         if (rec)
         {
             hu_protocol_decode_raw(packet, temp_buffer);
@@ -32,16 +33,16 @@ int Tm_rf::receive_raw_packet(bool blocking, hu_packet_t *packet)
 
 int Tm_rf::transmit_raw(uint8_t *raw, uint8_t len, bool blocking)
 {
-    bool success = rh_ask.send(raw, len);
+    bool success = driver->send(raw, len);
 
     if (blocking)
-        rh_ask.waitPacketSent(1000);
+        driver->waitPacketSent(1000);
     return success;
 }
 
 RHGenericDriver::RHMode Tm_rf::get_mode()
 {
-    return rh_ask.mode();
+    return driver->mode();
 }
 
 Tm_rf tm_rf;

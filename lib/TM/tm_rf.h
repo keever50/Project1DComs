@@ -9,7 +9,7 @@
 class Tm_rf
 {
 public:
-    int init();
+    int init(int bitrate);
     // Return 1 on receive
     int receive_raw_packet(bool blocking, hu_packet_t *packet);
     int transmit_raw(uint8_t *raw, uint8_t len, bool blocking);
