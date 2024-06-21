@@ -11,7 +11,7 @@
 #define red_pin (8)
 #define yellow_pin (9)
 #define green_pin (10)
-#define BITRATE 500
+#define BITRATE 2000
 
 char MM = 0;
 char flag = 0;
