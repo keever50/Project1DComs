@@ -79,8 +79,16 @@ void tm_prog_receiver_print_data(hu_packet_t &packet)
 
 void tm_prog_receiver_print_packet(hu_packet_t &packet, bool our_packet)
 {
+    unsigned long mil = millis();
+    unsigned long sec = mil / 1000;
+    unsigned long min = sec / 60;
+    unsigned long hour = min / 60;
+
+    String timestamp = "T " + String(hour % 24) + ':' + String(min % 60) + ':' + String(sec % 60) + ':' + String(mil % 1000) + '\n';
+
     tm_io.set_color(0b10010111);
     tm_io.set_auto_flush(false);
+    tm_io.print(timestamp);
     tm_io.print(F("-----START HU PACKET-----\n"));
 
     tm_io.print(F("Start: "));
