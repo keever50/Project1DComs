@@ -159,7 +159,7 @@ void HUontvangen(void)
         hu_protocol_print_packet(&packet);
         
     }    
-    else if(err == HU_PROT_RECEIVE_INCORRECT_LRC) //Controleren of er een LRC error is
+    if(err == HU_PROT_RECEIVE_INCORRECT_LRC) //Controleren of er een LRC error is
     {
         lrc_err_marijn +=1;
         sendrf(functiem_retrans_trans, packet.source, 0); //Vraag om een retransmit
@@ -168,10 +168,10 @@ void HUontvangen(void)
     uint8_t* data = packet.data; //Data uit pakket halen
     uint8_t dataLengthStart = packet.length; //Lengte van het pakket
 
-    if(err==HU_PROT_RECEIVE_RECEIVED)
-    {
-        analogWrite(YellowLed, HIGH);
-    }
+    // if(err==HU_PROT_RECEIVE_RECEIVED)
+    // {
+    //     analogWrite(GreenLed, HIGH);
+    // }
     if(err==HU_PROT_RECEIVE_RECEIVED)
     {   
       
@@ -230,6 +230,7 @@ void meetwaardes_recv(uint8_t *dataR, uint8_t dataLength) //Meetwaardes opslaan 
             Serial.print(F("0"));
         }
         Serial.print(dataR[i], HEX);
+        Serial.print(" ");
         j++;
     }
 
@@ -243,7 +244,8 @@ void meetwaardes_recv(uint8_t *dataR, uint8_t dataLength) //Meetwaardes opslaan 
     /////////////////////////////////////////////////////////////////////////////////
     reading.MM_adress = dataArray[0];
 
-    //Print de opgeslagen waardes    
+    //Print de opgeslagen waardes  
+    Serial.println("");  
     Serial.println(F("De waardes opgeslagen vlak na receive, eerst dataArray en dan dataR"));
     Serial.println(reading.MM_adress);
     Serial.println(reading.avgTemp);
@@ -410,7 +412,7 @@ void sendrf(uint8_t functie, uint8_t destinatie, uint8_t dataS) //Zendfunctie di
     packet.source = hu_protocol_encode_address("2AG3CO");
 
     Serial.println(F("Packet made"));
-
+    hu_protocol_print_packet(&packet);
     hu_protocol_transmit( &rh_ask, &packet );
     Serial.println(F("Packet sent"));
     analogWrite(YellowLed, 0);
