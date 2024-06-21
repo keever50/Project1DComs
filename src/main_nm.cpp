@@ -11,10 +11,11 @@
 #define red_pin (8)
 #define yellow_pin (9)
 #define green_pin (10)
+#define BITRATE 2000
 
 char MM = 0;
 char flag = 0;
-RH_ASK rh_ask(500, 3, 11, 0, false);
+RH_ASK rh_ask(BITRATE, 3, 11, 0, false);
 
 Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
 LiquidCrystal_I2C lcd(0x027, 16, 2);
@@ -22,13 +23,14 @@ LiquidCrystal_I2C lcd(0x027, 16, 2);
 void nm_route(char i);
 void kaartbepaler();
 void CO_route(char i);
-void MM_gevonden();
+void MM_gevonden(char i);
 void CO_gevonden();
 void RF_nm_receive();
 void Error();
 void ack_nm();
 void reset();
 
+//Dit zijn pijlen die later op het scherm worden weergeven
 byte arrow_up[] = 
 {
   B00100,
@@ -62,7 +64,7 @@ void setup(void)
   lcd.backlight();
   lcd.createChar(0, arrow_up);
   lcd.createChar(1, arrow_down);
-  hu_protocol_set_address(0x4C);
+  hu_protocol_set_address(0x4C);    //Zet eigen adres als 4C (hex)
   pinMode(red_pin, OUTPUT);
   pinMode(yellow_pin, OUTPUT);
   pinMode(green_pin, OUTPUT);
@@ -84,6 +86,7 @@ void loop(void)
 
 void kaartbepaler()
 {
+  //Alle mogelijke startlocaties staan hier gegeven
 uint8_t startlocatie1[4] = {0x92, 0x83, 0x1B, 0xCC};
 uint8_t startlocatie2[4] = {0x1C, 0x31, 0xFC, 0x42};
 uint8_t startlocatie3[4] = {0x02, 0x34, 0x11, 0x7E};
@@ -115,10 +118,10 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
   uint8_t UID;
   uint8_t UID_tag[7]= { 0, 0, 0, 0, 0, 0, 0};
   uint8_t UIDLengte;
-
+//De volgende functie scant de kaart en zet de gevonde UID in een arrayy, en bepaalt de lengte van deze array
   UID = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, UID_tag, &UIDLengte);
 
-  if (UID)
+  if (UID)  //De functie gaat pas verder als de UID gevonden is
   {
     lcd.clear();
     lcd.print(F("Kaart gescand"));
@@ -127,6 +130,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
 
     switch (UID_tag[0])
     {
+      //De gescand UID tag wordt hier vergeleken met alle mogelijke startlocaties
       case 0x92:
       if (memcmp(UID_tag, startlocatie1, 4)== 0)
       {
@@ -137,7 +141,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie19, 4) == 0)
       {
         i=19;
-        MM_gevonden();
+        MM_gevonden(i);
         RF_nm_receive();
         if (flag == 1)
         {
@@ -160,7 +164,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie2, 4)== 0)
       {
         i=2;
-        MM_gevonden();
+        MM_gevonden(i);
         RF_nm_receive();
         if (flag == 1)
         {
@@ -255,7 +259,17 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
         i=9;
         if (MM == 5)
         {
+          //Als alle meetmodules zijn gescand, wordt er een bericht verstuurd naar de CM en wordt het programma opnieuw gestart
           CO_gevonden();
+          lcd.clear();
+          lcd.print(F("Eindpunt breikt"));
+          delay(2000);
+          lcd.clear();
+          lcd.print(F("Terminating"));
+          lcd.setCursor(0, 1);
+          lcd.print(F("Programme...."));
+          delay(2000);
+          reset();
         }
         else
         nm_route(i);
@@ -278,7 +292,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie11, 4)== 0)
       {
         i=11;
-        MM_gevonden();
+        MM_gevonden(i);
         RF_nm_receive();
         if (flag == 1)
         {
@@ -309,7 +323,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie14, 4)== 0)
       {
         i=14;
-        MM_gevonden();
+        MM_gevonden(i);
         RF_nm_receive();
         if (flag == 1)
         {
@@ -332,7 +346,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, startlocatie15, 4)== 0)
       {
         i=15;
-        MM_gevonden();
+        MM_gevonden(i);
         RF_nm_receive();
         if (flag == 1)
         {
@@ -379,7 +393,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, testkaart1, 4)== 0)
       {
         i=0;
-        MM_gevonden();
+        MM_gevonden(i);
         RF_nm_receive();
         if (flag == 1)
         {
@@ -402,7 +416,7 @@ uint8_t testkaart2[4] = {0xA5, 0x3F, 0xFF, 0xBB};
       if (memcmp(UID_tag, testkaart2, 4)== 0)
       {
         i=0;
-        MM_gevonden();
+        MM_gevonden(i);
         RF_nm_receive();
         if (flag==1)
         {
@@ -433,7 +447,7 @@ void nm_route(char i)
     lcd.print(F("Route wordt"));
     lcd.setCursor(0,1);
     lcd.print(F("berekend....."));
-    delay(3000);
+    delay(2000);
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print(F("Route gevonden!"));
@@ -441,6 +455,7 @@ void nm_route(char i)
     lcd.clear();
   switch (i)
   {
+    //alle mogelijke routes
     case 0:
     lcd.print(F("geen geldige"));
     lcd.setCursor(0,1);
@@ -687,6 +702,7 @@ void CO_route(char i)
   lcd.clear();
   switch (i)
   {
+    //routes naar de centrale opslag van alle meetmodules
     case 2:
     lcd.print(F("2"));
     lcd.write(1);
@@ -737,15 +753,42 @@ void CO_route(char i)
   }
 }
 
-void MM_gevonden()
+void MM_gevonden(char i)
 {
+  //voor het versturen en ontvangen van data is er gebruik gemaakt van het eigen geschreven protocol via RF communicatie
 digitalWrite(yellow_pin, HIGH);
 uint8_t functie = 0xE7;
 hu_packet_t packet;
 packet.start=HU_PROTOCOL_START_BYTE;
 packet.end=HU_PROTOCOL_END_BYTE;
 packet.function= functie;
-packet.data[0]= 12;
+switch (i)
+{
+  //In deze switch case wordt de juiste meetmodule in de data van het bericht gezet
+  case 0:
+  packet.data[0] = 12;
+  break;
+
+  case 2:
+  packet.data[0] = 4;
+  break;
+
+  case 11:
+  packet.data[0] = 8;
+  break;
+
+  case 14:
+  packet.data[0] = 12;
+  break;
+
+  case 15:
+  packet.data[0] = 16;
+  break;
+
+  case 19:
+  packet.data[0] = 20;
+  break;
+}
 packet.length= HU_PROTOCOL_LENGTH_NON_DATA + 1;
 packet.destination = 0x2C;
 packet.source = 0x4C;
@@ -765,8 +808,9 @@ digitalWrite(green_pin, HIGH);
 hu_packet_t packet;
 while (a != 1)
 {
+//Deze loop wordt alleen beëindigd als er een bericht binnenkomt
 hu_prot_receive_err_t err = hu_protocol_receive(&rh_ask, &packet);
-if ((packet.function == 0xEC) && (packet.destination == 0x4C) )
+if ((packet.function == 0xEB) && (packet.destination == 0x4C) )
 {
   digitalWrite(green_pin, LOW);
   lcd.clear();
@@ -775,6 +819,7 @@ if ((packet.function == 0xEC) && (packet.destination == 0x4C) )
 }
 else if((packet.function == 0xDB) && (packet.destination == 0x4C))
 {
+  lcd.clear();
   ack_nm();
   reset();
   a = 1;
@@ -842,6 +887,7 @@ digitalWrite(yellow_pin, LOW);
 
 void reset()
 {
+  //Reset Arduino
   wdt_enable(WDTO_15MS);
   while(1);
 }

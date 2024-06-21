@@ -469,10 +469,13 @@ void setup00()
 // Written by Marijn Boumans & Kevin Witteveen
 String hu_protocol_decode_address(uint8_t address)
 {
-    if (address == 0x00)
-        return "N/A";
 
-    String addressName = "";
+    if (address == 0x00)
+        return "0x00 N/A";
+
+    String addressName = "0x";
+
+    addressName += String(address, HEX) + ' ';
 
     char letter = 'A' + (address & 0b11);
     addressName += "2";
@@ -519,7 +522,7 @@ String hu_protocol_decode_function(uint8_t func)
     // Read function bits
     uint8_t funcbits = func >> 2;
     funcbits &= 0b1111;
-    switch (funcbits)
+    switch (funcbits + 1)
     {
     case 1:
         msg += "Retransmit";
@@ -529,6 +532,9 @@ String hu_protocol_decode_function(uint8_t func)
         break;
     case 6:
         msg += "Overd meetw";
+        break;
+    case 7:
+        msg += "Reset";
         break;
     case 8:
         msg += "Opvr status";
