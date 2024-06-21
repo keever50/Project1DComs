@@ -11,7 +11,7 @@
 
 //LCD en RF instellen
 LiquidCrystal_I2C lcd(0x27,  16, 2); 
-RH_ASK rh_ask(500, 10, 11, 0, false); // Bitrate, receive pin, transmit pin, select pin(niet gebruikt), select inverse(niet gebruikt)
+RH_ASK rh_ask(2000, 10, 11, 0, false); // Bitrate, receive pin, transmit pin, select pin(niet gebruikt), select inverse(niet gebruikt)
 
 
 //Bepaalde waardes definiëren
@@ -89,6 +89,9 @@ void setup()
     rh_ask.init();
     lcd.init();
     lcd.backlight();
+
+    //Welkom bericht op LCD
+    lcd.print("Welkom");
 
     //Inputs & outputs instellen
     pinMode(ButtonUp, INPUT_PULLUP);
@@ -226,7 +229,7 @@ void meetwaardes_recv(uint8_t *dataR, uint8_t dataLength) //Meetwaardes opslaan 
         {
             Serial.print(F("0"));
         }
-        Serial.println(dataR[i], HEX);
+        Serial.print(dataR[i], HEX);
         j++;
     }
 
