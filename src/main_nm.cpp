@@ -802,6 +802,7 @@ digitalWrite(yellow_pin, LOW);
 void RF_nm_receive()
 {
 char a = 0;
+char b = 0;
 lcd.clear();
 lcd.print(F("Receiving"));
 digitalWrite(green_pin, HIGH);
@@ -846,7 +847,7 @@ void Error()
 void ack_nm()
 {
 lcd.print(F("Sending"));
-delay(2000);
+delay(500);
 digitalWrite(yellow_pin, HIGH);
 uint8_t functie = 0xEC;
 hu_packet_t packet;
@@ -867,7 +868,7 @@ digitalWrite(yellow_pin, LOW);
 void CO_gevonden()
 {
 lcd.print(F("Sending"));
-delay(2000);
+delay(500);
 digitalWrite(yellow_pin, HIGH);
 uint8_t functie = 0xF3;
 hu_packet_t packet;
@@ -892,4 +893,3 @@ void reset()
   while(1);
 }
 #endif
-
